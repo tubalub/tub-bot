@@ -1,7 +1,6 @@
 import os
 
 from pymongo import MongoClient
-from hikari import Snowflake
 
 from domain.User import User
 
@@ -57,7 +56,7 @@ def update_user(user_id, update_data):
         int: The number of documents modified.
     """
     result = users_collection.update_one(
-        {"id": Snowflake(user_id)},
+        {"id": user_id},
         {"$set": update_data}
     )
     return result.modified_count
