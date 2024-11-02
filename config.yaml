@@ -1,0 +1,7 @@
+google:
+  sheets:
+    sheet_id: "1FYL7O7RUkm4Fw-D2xw4R48QbY90hKf34oWgZ0_89vX8"
+    data_range: "Data"
+    user_range: "id-mapping"
+    yo_range: "yo-count"
+    end_row_title: "SUM"
