@@ -24,7 +24,7 @@ def create_user(user) -> str:
         str: The ID of the newly created user.
     """
     user_dict = {
-        "id": user.id,
+        "_id": user.id,
         "aliases": user.aliases,
         "games": user.games
     }
@@ -41,7 +41,7 @@ def read_user(user_id) -> User:
     Returns:
         User: The user object retrieved from the database.
     """
-    return users_collection.find_one({"id": user_id})
+    return users_collection.find_one({"_id": user_id})
 
 
 def update_user(user_id, update_data):
@@ -56,7 +56,7 @@ def update_user(user_id, update_data):
         int: The number of documents modified.
     """
     result = users_collection.update_one(
-        {"id": user_id},
+        {"_id": user_id},
         {"$set": update_data}
     )
     return result.modified_count
@@ -139,5 +139,5 @@ def delete_user(user_id):
     Returns:
         int: The number of documents deleted.
     """
-    result = users_collection.delete_one({"id": user_id})
+    result = users_collection.delete_one({"_id": user_id})
     return result.deleted_count
