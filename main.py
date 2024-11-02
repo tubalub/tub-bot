@@ -1,7 +1,6 @@
 import logging
 
-import yaml
-
+from service.google import init_google
 from service.hikari_bot import bot
 
 logging.basicConfig(
@@ -10,9 +9,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-with open("config.yaml", "r") as file:
-    config = yaml.safe_load(file)
-
 if __name__ == "__main__":
-    # Run the bot.
+    init_google()
     bot.run()
