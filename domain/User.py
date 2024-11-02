@@ -1,6 +1,4 @@
-from hikari import Snowflake
-
 class User:
-    id: Snowflake
+    id: str
     aliases: list[str]
     games: dict[str, int]
