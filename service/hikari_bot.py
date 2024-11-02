@@ -12,6 +12,7 @@ if BOT_TOKEN is None:
 
 bot = hikari.GatewayBot(BOT_TOKEN)
 
+
 @bot.listen()
 async def ping(event: hikari.MessageCreateEvent):
     logger.info(f"Received message: {event.message}")

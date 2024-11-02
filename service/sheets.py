@@ -59,4 +59,3 @@ def main():
             print(f"{row[0]}, {row[4]}")
     except HttpError as err:
         print(err)
-

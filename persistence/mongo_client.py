@@ -73,7 +73,11 @@ def add_alias(user_id, alias):
     Returns:
         int: The number of documents modified.
     """
-    return update_user(user_id, {"$addToSet": {"aliases": alias}})
+    result = users_collection.update_one(
+        {"_id": user_id},
+        {"$addToSet": {"aliases": alias}}
+    )
+    return result.modified_count
 
 
 def remove_alias(user_id, alias):
@@ -87,7 +91,11 @@ def remove_alias(user_id, alias):
     Returns:
         int: The number of documents modified.
     """
-    return update_user(user_id, {"$pull": {"aliases": alias}})
+    result = users_collection.update_one(
+        {"_id": user_id},
+        {"$pull": {"aliases": alias}}
+    )
+    return result.modified_count
 
 
 def add_game(user_id, game_name, score):
@@ -102,31 +110,11 @@ def add_game(user_id, game_name, score):
     Returns:
         int: The number of documents modified.
     """
-    return update_user(
-        user_id,
+    result = users_collection.update_one(
+        {"_id": user_id},
         {"$set": {f"games.{game_name}": score}}
     )
-
-
-def update_game(user_id, game_name, score):
-    """
-    Update the score of a game in a user's games dictionary.
-
-    Args:
-        user_id (str): The ID of the user.
-        game_name (str): The name of the game to be updated.
-        score (int): The new score of the game.
-
-    Returns:
-        int: The number of documents modified.
-    """
-    if not read_user(user_id).games.get(game_name):
-        return add_game(user_id, game_name, score)
-    else:
-        return update_user(
-            user_id,
-            {"$set": {f"games.{game_name}": score}}
-        )
+    return result.modified_count
 
 
 def delete_user(user_id):
