@@ -5,7 +5,7 @@ import pytest
 from domain.User import User
 from persistence.mongo_client import (
     create_user, read_user, update_user, delete_user,
-    add_alias, remove_alias, add_game
+    add_alias, remove_alias, add_game, update_yo_count
 )
 
 
@@ -73,3 +73,25 @@ def test_add_game(mock_db):
     add_game("123", "game2", 200)
     updated_user = read_user("123")
     assert updated_user['games']["game2"] == 200
+
+def test_update_yo_count(mock_db):
+    # Create a mock author object
+    class MockAuthor:
+        def __init__(self, id, display_name):
+            self.id = id
+            self.display_name = display_name
+
+    author = MockAuthor(id="123", display_name="TestUser")
+
+    # Initialize the yo-counter document
+    mock_db['users'].insert_one({"_id": "yo-counter", "count": 0})
+
+    # Call update_yo_count and verify the results
+    user_count, counter = update_yo_count(author)
+    assert user_count == 1
+    assert counter['count'] == 1
+
+    # Call update_yo_count again and verify the results
+    user_count, counter = update_yo_count(author)
+    assert user_count == 2
+    assert counter['count'] == 2
