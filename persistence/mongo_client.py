@@ -1,6 +1,6 @@
 import os
 
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 
 from domain.User import User
 
@@ -129,3 +129,16 @@ def delete_user(user_id):
     """
     result = users_collection.delete_one({"_id": user_id})
     return result.deleted_count
+
+def update_yo_count(author):
+    user = users_collection.find_one_and_update(
+        {"_id": str(author.id)},
+        {"$inc": {"yo_count": 1}, "$set": {"display_name": author.display_name}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
+    )
+    users_collection.update_one(
+        {"_id": "yo-counter"},
+        {"$inc": {"count": 1}}
+    )
+    return user["yo_count"], users_collection.find_one({"_id": "yo-counter"})
