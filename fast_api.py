@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 import logging
-from service.google import fetch_google_sheet_data
+from service.google import fetch_google_sheet_data, SHEET_ID, DATA_RANGE
 
 api = FastAPI()
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 @api.post("/sheet/update")
 async def update_sheet():
     try:
-        data = fetch_google_sheet_data()
+        data = fetch_google_sheet_data(SHEET_ID, DATA_RANGE)
         logger.info("Data fetched and processed successfully")
         return {"message": data}
     except Exception as e:

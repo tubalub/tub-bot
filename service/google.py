@@ -38,10 +38,13 @@ def init_google():
         logger.error(f"HttpError occured: {err}")
 
 
-def fetch_google_sheet_data():
+def fetch_google_sheet_data(sheet_id, data_range):
     try:
         logger.info("Calling stubbed fetch_google_sheet_data")
-        return "Stubbed data"
+        result = sheets.values().get(spreadsheetId=sheet_id, range=data_range).execute()
+        values = result.get("values", [])
+        logger.info(f"Retrieved data: {values}")
+        return values
     except HttpError as err:
         logger.error(f"HttpError occurred: {err}")
         raise
