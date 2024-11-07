@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from config import config
+from persistence.sheet_mapper import map_to_scores
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -40,11 +41,13 @@ def init_google():
 
 def fetch_google_sheet_data(sheet_id, data_range):
     try:
-        logger.info("Calling stubbed fetch_google_sheet_data")
         result = sheets.values().get(spreadsheetId=sheet_id, range=data_range).execute()
         values = result.get("values", [])
-        logger.info(f"Retrieved data: {values}")
-        return values
+        score_map = map_to_scores(values, END_ROW_TITLE)
+        for user, scores in score_map.items():
+            logger.info(f"User: {user}, Scores: {scores}")
+
+        return score_map
     except HttpError as err:
         logger.error(f"HttpError occurred: {err}")
         raise
