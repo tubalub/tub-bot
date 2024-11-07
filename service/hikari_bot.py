@@ -15,10 +15,13 @@ if BOT_TOKEN is None:
 
 bot = hikari.GatewayBot(BOT_TOKEN, intents=hikari.Intents.ALL)
 
+
 @bot.listen()
 async def message(event: hikari.GuildMessageCreateEvent):
-    if event.message.content and event.message.content.upper() == "YO" and not event.author.is_bot:
+    if event.message.content and event.message.content.upper(
+    ) == "YO" and not event.author.is_bot:
         return await handle_yo_message(event)
+
 
 async def handle_yo_message(event):
     logger.info(f"Received yo from {event.message.author.display_name}")

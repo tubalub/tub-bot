@@ -74,6 +74,7 @@ def test_add_game(mock_db):
     updated_user = read_user("123")
     assert updated_user['games']["game2"] == 200
 
+
 def test_update_yo_count(mock_db):
     # Create a mock author object
     class MockAuthor:

@@ -130,6 +130,7 @@ def delete_user(user_id):
     result = users_collection.delete_one({"_id": user_id})
     return result.deleted_count
 
+
 def update_yo_count(author):
     user = users_collection.find_one_and_update(
         {"_id": str(author.id)},

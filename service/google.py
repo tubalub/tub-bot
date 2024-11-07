@@ -36,3 +36,12 @@ def init_google():
         logger.info("Google Sheets API service created successfully")
     except HttpError as err:
         logger.error(f"HttpError occured: {err}")
+
+
+def fetch_google_sheet_data():
+    try:
+        logger.info("Calling stubbed fetch_google_sheet_data")
+        return "Stubbed data"
+    except HttpError as err:
+        logger.error(f"HttpError occurred: {err}")
+        raise
