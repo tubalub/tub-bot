@@ -57,7 +57,8 @@ def update_user(user_id, update_data):
     """
     result = users_collection.update_one(
         {"_id": user_id},
-        {"$set": update_data}
+        {"$set": update_data},
+        upsert = True
     )
     return result.modified_count
 
@@ -79,6 +80,17 @@ def add_alias(user_id, alias):
     )
     return result.modified_count
 
+def find_user_by_alias(alias: str):
+    """
+    Find a user by alias.
+
+    Args:
+        alias (str): The alias to search for.
+
+    Returns:
+        User: The user object retrieved from the database.
+    """
+    return users_collection.find_one({"aliases": {"$in": [alias]}})
 
 def remove_alias(user_id, alias):
     """
