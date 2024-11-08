@@ -1,4 +1,3 @@
-import sys
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -21,7 +20,7 @@ logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 
-async def start_api():
+def start_api():
     config = uvicorn.Config(
         api,
         port=8080,
@@ -29,7 +28,7 @@ async def start_api():
         log_level="debug",
         log_config=LOGGING_CONFIG)
     server = uvicorn.Server(config)
-    await server.serve()
+    server.serve()
 
 
 @asynccontextmanager
