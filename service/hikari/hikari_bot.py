@@ -24,6 +24,7 @@ loader = lightbulb.Loader()
 
 @api.on_event("startup")
 async def start_bot():
+    logger.info("starting bot and google client")
     init_google()
     asyncio.create_task(bot.start())
 
