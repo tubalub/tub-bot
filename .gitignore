@@ -166,3 +166,7 @@ cython_debug/
 service-key.json
 # ssl certs
 *.pem
+
+# ide
+.idea/
+.vscode/
