@@ -4,9 +4,15 @@ import pytest
 
 from domain.User import User
 from persistence.mongo_client import (
-    create_user, update_user, delete_user,
-    add_aliases, remove_alias, add_game, update_yo_count, find_user_by_alias, read_user
-)
+    create_user,
+    update_user,
+    delete_user,
+    add_aliases,
+    remove_alias,
+    add_game,
+    update_yo_count,
+    find_user_by_alias,
+    read_user)
 
 
 @pytest.fixture
@@ -57,6 +63,7 @@ def test_add_alias(mock_db):
     assert "alias2" in result['aliases']
     assert "alias3" in result['aliases']
 
+
 def test_find_user_by_alias(mock_db):
     user = User(id="123", aliases=["alias1", "alias2"], games={"game1": 100})
     create_user(user)
@@ -64,6 +71,7 @@ def test_find_user_by_alias(mock_db):
     assert found_user is not None
     assert found_user['_id'] == "123"
     assert "alias1" in found_user['aliases']
+
 
 def test_remove_alias(mock_db):
     user = User(id="123", aliases=["alias1", "alias2"], games={"game1": 100})

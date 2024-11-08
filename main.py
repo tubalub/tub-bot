@@ -5,7 +5,7 @@ from fast_api import start_api
 from service.hikari.hikari_bot import start_bot
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 logger = logging.getLogger(__name__)

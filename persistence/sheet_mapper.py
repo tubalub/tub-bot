@@ -27,27 +27,24 @@ def process_header_row(header_row: List[Any]) -> List[str]:
 def process_data_row(row: List[Any],
                      max_col: int,
                      titles: List[str],
-                     score_map: Dict[str,
-                     List[Tuple[str, int]]]) -> None:
+                     score_map: Dict[str, Dict[str, int]]) -> None:
     name = to_name(row[0])
     if not name:
         return
+
+    if name not in score_map:
+        score_map[name] = {}
 
     for col in range(1, min(len(row), max_col)):
         game = titles[col - 1] if col - 1 < len(titles) else None
         if not game:
             continue
         score = to_score(row[col])
-
-        entry = (game, score)
-        if name in score_map:
-            score_map[name].append(entry)
-        else:
-            score_map[name] = [entry]
+        score_map[name][game] = score
 
 
-def map_to_scores(
-        sheet: List[List[Any]], end_row_title: str) -> Dict[str, List[Tuple[str, int]]]:
+def map_to_scores(sheet: List[List[Any]],
+                  end_row_title: str) -> Dict[str, Dict[str, int]]:
     """
     Helper function to process data from Google sheets
     :param end_row_title: delimiter for the end of the data
@@ -57,7 +54,7 @@ def map_to_scores(
     if not sheet:
         return {}
 
-    score_map: Dict[str, List[Tuple[str, int]]] = {}
+    score_map: Dict[str, Dict[str, int]] = {}
 
     titles = process_header_row(sheet[0])
     max_col = len(sheet[0])

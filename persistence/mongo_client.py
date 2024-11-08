@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 import hikari.users
 from pymongo import MongoClient, ReturnDocument
@@ -75,12 +76,14 @@ def add_aliases(user_id: str, *aliases: str):
     Returns:
         int: The number of documents modified.
     """
+    uppercased_aliases = [alias.upper() for alias in aliases]
     return users_collection.find_one_and_update(
         {"_id": user_id},
-        {"$addToSet": {"aliases": {"$each": aliases}}},
+        {"$addToSet": {"aliases": {"$each": uppercased_aliases}}},
         upsert=True,
         return_document=ReturnDocument.AFTER
     )
+
 
 def find_user_by_alias(alias: str):
     """
@@ -93,6 +96,7 @@ def find_user_by_alias(alias: str):
         User: The user object retrieved from the database.
     """
     return users_collection.find_one({"aliases": {"$in": [alias]}})
+
 
 def remove_alias(user_id, alias):
     """
@@ -108,6 +112,25 @@ def remove_alias(user_id, alias):
     return users_collection.find_one_and_update(
         {"_id": user_id},
         {"$pull": {"aliases": alias}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
+    )
+
+
+def add_games(user_id: str, games: Dict[str, int]):
+    """
+    Add games to a user's games dictionary and return the updated document.
+
+    Args:
+        user_id (str): The ID of the user.
+        games (list[tuple[str,int]): The games to be added.
+
+    Returns:
+        dict: The updated user document.
+    """
+    return users_collection.find_one_and_update(
+        {"_id": user_id},
+        {"$set": {"games": games}},
         upsert=True,
         return_document=ReturnDocument.AFTER
     )

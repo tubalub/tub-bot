@@ -23,18 +23,18 @@ END_ROW_TITLE = config["google"]["sheets"]["end_row_title"]
 
 logger = logging.getLogger(__name__)
 
-google = None
-sheets = None
+GOOGLE = None
+SHEETS = None
 
 
 def init_google():
-    global google, sheets
+    global GOOGLE, SHEETS
     creds: Credentials = service_account.Credentials.from_service_account_file(
         SERVICE_KEY_PATH, scopes=SCOPES)
 
     try:
-        google = build("sheets", "v4", credentials=creds)
-        sheets = google.spreadsheets()
+        GOOGLE = build("sheets", "v4", credentials=creds)
+        SHEETS = GOOGLE.spreadsheets()
         logger.info("Google Sheets API service created successfully")
     except HttpError as err:
         logger.error(f"HttpError occured: {err}")
@@ -42,7 +42,7 @@ def init_google():
 
 def fetch_google_sheet_data(sheet_id, data_range) -> List[List[str]]:
     try:
-        result = sheets.values().get(spreadsheetId=sheet_id, range=data_range).execute()
+        result = SHEETS.values().get(spreadsheetId=sheet_id, range=data_range).execute()
         return result.get("values", [])
     except HttpError as err:
         logger.error(f"HttpError occurred: {err}")

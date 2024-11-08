@@ -2,8 +2,10 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 import logging
 
+from persistence.sheet_mapper import map_to_scores
 from service.game_service import update_scores
-from service.google import fetch_google_sheet_data, SHEET_ID, DATA_RANGE
+from service.google import fetch_google_sheet_data, SHEET_ID, DATA_RANGE, USER_RANGE, END_ROW_TITLE
+from service.user_service import update_aliases
 
 api = FastAPI()
 logger = logging.getLogger(__name__)
@@ -18,9 +20,23 @@ async def start_api():
 @api.post("/sheet/update")
 async def update_sheet():
     try:
-        data = fetch_google_sheet_data(SHEET_ID, DATA_RANGE)
-        logger.info("Data fetched and processed successfully")
-        return update_scores(data)
+        success = 0
+        logger.info("Reading updated user sheet")
+        user_data = fetch_google_sheet_data(SHEET_ID, USER_RANGE)
+        logger.debug(user_data)
+        count = update_aliases(user_data)
+        logger.info(f"Updated {count} user aliases")
+        success += 1
+
+        logger.info("Reading updated data sheet")
+        score_data = fetch_google_sheet_data(SHEET_ID, DATA_RANGE)
+        score_map = map_to_scores(score_data, END_ROW_TITLE)
+        count = update_scores(score_map)
+        logger.info(f"Updated {count} user scores")
+        success += 1
+
+        return {"message": f"{success} successful operations"}
     except Exception as e:
-        logger.error(f"Error fetching data: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching data")
+        logger.error(e)
+        raise HTTPException(status_code=500,
+                            detail=f"Error updating score data: {e}")
