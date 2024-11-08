@@ -19,6 +19,7 @@ async def start_api():
     server = uvicorn.Server(config)
     await server.serve()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting bot")
@@ -28,6 +29,7 @@ async def lifespan(app: FastAPI):
     await bot.close()
 
 api = FastAPI(lifespan=lifespan)
+
 
 @api.post("/sheet/update")
 async def update_sheet():

@@ -21,6 +21,7 @@ bot = hikari.GatewayBot(BOT_TOKEN, intents=hikari.Intents.ALL)
 client = lightbulb.client_from_app(bot)
 loader = lightbulb.Loader()
 
+
 async def start_bot():
     init_google()
     asyncio.create_task(bot.start())
