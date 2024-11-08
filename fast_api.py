@@ -31,6 +31,11 @@ api = FastAPI(lifespan=lifespan)
 
 
 @api.get("/")
+async def root():
+    return await hello()
+
+
+@api.get("/_ah/warmup")
 async def hello():
     return "App is running"
 
