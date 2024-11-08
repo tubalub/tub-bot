@@ -1,6 +1,6 @@
 import lightbulb
 
-from service.hikari.hikari_bot import loader
+loader = lightbulb.Loader()
 
 
 @loader.command

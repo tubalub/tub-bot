@@ -17,10 +17,10 @@ if BOT_TOKEN is None:
 
 bot = hikari.GatewayBot(BOT_TOKEN, intents=hikari.Intents.ALL)
 client = lightbulb.client_from_app(bot)
-loader = lightbulb.Loader()
 
 
 async def start_bot():
+    logger.info("Starting bot")
     asyncio.create_task(bot.start())
 
 
