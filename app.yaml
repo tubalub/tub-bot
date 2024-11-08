@@ -1,0 +1,24 @@
+runtime: python39
+
+entrypoint: gunicorn -c gunicorn_conf.py main:api
+
+instance_class: F1
+automatic_scaling:
+  min_instances: 1
+  max_instances: 1
+
+inbound_services:
+  - warmup
+
+handlers:
+  - url: /gamepicker
+    static_dir: gamepicker
+
+  - url: /.*
+    secure: always
+    redirect_http_response_code: 301
+    script: auto
+
+  - url: /_ah/warmup
+    static_files: static/img/favicon.ico
+    upload: static/img/favicon.ico
