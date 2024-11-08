@@ -43,7 +43,7 @@ async def message(event: hikari.GuildMessageCreateEvent):
         return await handle_yo_message(event)
 
 
-async def handle_yo_message(event):
+async def handle_yo_message(event: hikari.GuildMessageCreateEvent):
     logger.info(f"Received yo from {event.message.author.display_name}")
     user_count, counter = update_yo_count(event.message.author)
     total_count = counter['count']
