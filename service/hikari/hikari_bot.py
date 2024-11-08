@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from datetime import datetime
@@ -5,6 +6,7 @@ from datetime import datetime
 import hikari
 import lightbulb
 
+from fast_api import api
 from persistence.mongo_client import update_yo_count
 from service.google import init_google
 from service.hikari import commands
@@ -20,10 +22,10 @@ bot = hikari.GatewayBot(BOT_TOKEN, intents=hikari.Intents.ALL)
 client = lightbulb.client_from_app(bot)
 loader = lightbulb.Loader()
 
-
+@api.on_event("startup")
 async def start_bot():
     init_google()
-    await bot.start()
+    asyncio.create_task(bot.start())
 
 
 @bot.listen(hikari.StartingEvent)
