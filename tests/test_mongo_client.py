@@ -3,6 +3,7 @@ import mongomock
 import pytest
 
 from domain.User import User
+from persistence.EntityNotFoundError import EntityNotFoundError
 from persistence.mongo_client import (
     create_user,
     update_user,
@@ -12,7 +13,7 @@ from persistence.mongo_client import (
     add_game,
     update_yo_count,
     find_user_by_alias,
-    read_user)
+    get_user)
 
 
 @pytest.fixture
@@ -35,7 +36,7 @@ def test_create_user(mock_db):
     user = User(id="123", aliases=["alias1"], games={"game1": 100})
     user_id = create_user(user)
     assert user_id is not None
-    retrieved_user = read_user("123")
+    retrieved_user = get_user("123")
     assert retrieved_user['_id'] == "123"
     assert retrieved_user['aliases'] == ["alias1"]
     assert retrieved_user['games'] == {"game1": 100}
@@ -52,8 +53,8 @@ def test_delete_user(mock_db):
     user = User(id="123", aliases=["alias1"], games={"game1": 100})
     create_user(user)
     delete_user("123")
-    deleted_user = read_user("123")
-    assert deleted_user is None
+    with pytest.raises(EntityNotFoundError):
+        get_user("123")
 
 
 def test_add_alias(mock_db):
