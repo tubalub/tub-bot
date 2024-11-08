@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Dict, List, Tuple
 
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
@@ -39,7 +40,7 @@ def init_google():
         logger.error(f"HttpError occured: {err}")
 
 
-def fetch_google_sheet_data(sheet_id, data_range):
+def fetch_google_sheet_data(sheet_id, data_range) -> Dict[str, List[Tuple[str, int]]]:
     try:
         result = sheets.values().get(spreadsheetId=sheet_id, range=data_range).execute()
         values = result.get("values", [])

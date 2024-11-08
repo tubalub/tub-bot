@@ -1,6 +1,8 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException
 import logging
+
+from service.game_service import update_scores
 from service.google import fetch_google_sheet_data, SHEET_ID, DATA_RANGE
 
 api = FastAPI()
@@ -18,7 +20,7 @@ async def update_sheet():
     try:
         data = fetch_google_sheet_data(SHEET_ID, DATA_RANGE)
         logger.info("Data fetched and processed successfully")
-        return {"message": data}
+        return update_scores(data)
     except Exception as e:
         logger.error(f"Error fetching data: {e}")
         raise HTTPException(status_code=500, detail="Error fetching data")
