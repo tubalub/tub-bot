@@ -1,15 +1,20 @@
-import os
 from typing import Dict
 
 import hikari.users
 from pymongo import MongoClient, ReturnDocument
 
 from domain.User import User
+from service.google import MONGO_TOKEN, init_google, get_secrets, MONGO_TOKEN_KEY
+
+token = MONGO_TOKEN
+
+if not token:
+    init_google()
+    token = get_secrets(MONGO_TOKEN_KEY)
 
 # MongoDB connection setup
 SERVICE_USER = "arbitragexiv-service-user"
-SERVICE_PASSWORD = os.getenv("MONGO_SERVICE_PASSWORD")
-CONNECTION_STRING = f"mongodb+srv://{SERVICE_USER}:{SERVICE_PASSWORD}@tubalub.i3nux.mongodb.net/"
+CONNECTION_STRING = f"mongodb+srv://{SERVICE_USER}:{token}@tubalub.i3nux.mongodb.net/"
 client = MongoClient(CONNECTION_STRING)
 db = client['tubalub']
 users_collection = db['users']

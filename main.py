@@ -1,18 +1,13 @@
 import asyncio
-import logging
+import logging.config
 
-from fast_api import start_api
-from service.hikari.hikari_bot import start_bot
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+from fast_api import start_api, api
+from service.hikari.hikari_bot import bot
 
 logger = logging.getLogger(__name__)
 
-
-async def main():
-    await asyncio.gather(start_bot(), start_api())
+api = api
+bot = bot
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(start_api())

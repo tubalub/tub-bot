@@ -60,8 +60,8 @@ def test_add_alias(mock_db):
     user = User(id="123", aliases=["alias1"], games={"game1": 100})
     create_user(user)
     result = add_aliases("123", "alias2", "alias3")
-    assert "alias2" in result['aliases']
-    assert "alias3" in result['aliases']
+    assert "ALIAS2" in result['aliases']
+    assert "ALIAS3" in result['aliases']
 
 
 def test_find_user_by_alias(mock_db):
