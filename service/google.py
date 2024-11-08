@@ -28,6 +28,7 @@ SHEETS = None
 
 
 def init_google():
+    logger.info("Initializing google client")
     global GOOGLE, SHEETS
     creds: Credentials = service_account.Credentials.from_service_account_file(
         SERVICE_KEY_PATH, scopes=SCOPES)

@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI, HTTPException
 import logging
@@ -5,6 +7,7 @@ import logging
 from persistence.sheet_mapper import map_to_scores
 from service.game_service import update_scores
 from service.google import fetch_google_sheet_data, SHEET_ID, DATA_RANGE, USER_RANGE, END_ROW_TITLE
+from service.hikari.hikari_bot import start_bot, bot
 from service.user_service import update_aliases
 
 api = FastAPI()
@@ -16,6 +19,15 @@ async def start_api():
     server = uvicorn.Server(config)
     await server.serve()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting bot")
+    await start_bot()
+    yield
+    logger.info("Shutting down bot")
+    await bot.close()
+
+api = FastAPI(lifespan=lifespan)
 
 @api.post("/sheet/update")
 async def update_sheet():
