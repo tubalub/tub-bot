@@ -164,3 +164,5 @@ cython_debug/
 
 # local google cloud service key
 service-key.json
+# ssl certs
+*.pem

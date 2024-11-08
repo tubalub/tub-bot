@@ -1,6 +1,6 @@
 runtime: python312
 
-entrypoint: gunicorn -w 2 -b :8080 -k uvicorn.workers.UvicornWorker main:api
+entrypoint: gunicorn -w 2 -b :8080 -k uvicorn.workers.UvicornWorker --log-level debug main:api
 
 instance_class: F1
 automatic_scaling:

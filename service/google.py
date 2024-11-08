@@ -78,7 +78,7 @@ def get_secrets(secret_id, version_id="latest"):
 
 def fetch_google_sheet_data(sheet_id, data_range) -> List[List[str]]:
     try:
-        logger.debug(f"Fetching data from {sheet_id} in range {data_range}")
+        logger.info(f"Fetching data from {sheet_id} in range {data_range}")
         result = SHEETS.values().get(spreadsheetId=sheet_id, range=data_range).execute()
         return result.get("values", [])
     except HttpError as err:
