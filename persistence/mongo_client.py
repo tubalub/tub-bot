@@ -1,5 +1,6 @@
 import os
 
+import hikari.users
 from pymongo import MongoClient, ReturnDocument
 
 from domain.User import User
@@ -46,39 +47,40 @@ def read_user(user_id) -> User:
 
 def update_user(user_id, update_data):
     """
-    Update a user in the database by ID.
+    Update a user in the database by ID and return the updated document.
 
     Args:
         user_id (str): The ID of the user to be updated.
         update_data (dict): The data to update the user with.
 
     Returns:
-        int: The number of documents modified.
+        dict: The updated user document.
     """
-    result = users_collection.update_one(
+    return users_collection.find_one_and_update(
         {"_id": user_id},
         {"$set": update_data},
-        upsert = True
+        upsert=True,
+        return_document=ReturnDocument.AFTER
     )
-    return result.modified_count
 
 
-def add_alias(user_id, alias):
+def add_aliases(user_id: str, *aliases: str):
     """
     Add an alias to a user's aliases array.
 
     Args:
         user_id (str): The ID of the user.
-        alias (str): The alias to be added.
+        aliases (str): The alias to be added.
 
     Returns:
         int: The number of documents modified.
     """
-    result = users_collection.update_one(
+    return users_collection.find_one_and_update(
         {"_id": user_id},
-        {"$addToSet": {"aliases": alias}}
+        {"$addToSet": {"aliases": {"$each": aliases}}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
     )
-    return result.modified_count
 
 def find_user_by_alias(alias: str):
     """
@@ -94,25 +96,26 @@ def find_user_by_alias(alias: str):
 
 def remove_alias(user_id, alias):
     """
-    Remove an alias from a user's aliases array.
+    Remove an alias from a user's aliases array and return the updated document.
 
     Args:
         user_id (str): The ID of the user.
         alias (str): The alias to be removed.
 
     Returns:
-        int: The number of documents modified.
+        dict: The updated user document.
     """
-    result = users_collection.update_one(
+    return users_collection.find_one_and_update(
         {"_id": user_id},
-        {"$pull": {"aliases": alias}}
+        {"$pull": {"aliases": alias}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
     )
-    return result.modified_count
 
 
 def add_game(user_id, game_name, score):
     """
-    Add a game to a user's games dictionary.
+    Add a game to a user's games dictionary and return the updated document.
 
     Args:
         user_id (str): The ID of the user.
@@ -120,13 +123,14 @@ def add_game(user_id, game_name, score):
         score (int): The score of the game.
 
     Returns:
-        int: The number of documents modified.
+        dict: The updated user document.
     """
-    result = users_collection.update_one(
+    return users_collection.find_one_and_update(
         {"_id": user_id},
-        {"$set": {f"games.{game_name}": score}}
+        {"$set": {f"games.{game_name}": score}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
     )
-    return result.modified_count
 
 
 def delete_user(user_id):
@@ -143,15 +147,26 @@ def delete_user(user_id):
     return result.deleted_count
 
 
-def update_yo_count(author):
+def update_yo_count(author: hikari.users.User):
+    """
+    Update the yo count for a user and return the updated document.
+
+    Args:
+        author (object): The author object containing id and display_name.
+
+    Returns:
+        tuple: The updated yo count and the yo-counter document.
+    """
     user = users_collection.find_one_and_update(
         {"_id": str(author.id)},
         {"$inc": {"yo_count": 1}, "$set": {"display_name": author.display_name}},
         upsert=True,
         return_document=ReturnDocument.AFTER
     )
-    users_collection.update_one(
+    counter = users_collection.find_one_and_update(
         {"_id": "yo-counter"},
-        {"$inc": {"count": 1}}
+        {"$inc": {"count": 1}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
     )
-    return user["yo_count"], users_collection.find_one({"_id": "yo-counter"})
+    return user["yo_count"], counter

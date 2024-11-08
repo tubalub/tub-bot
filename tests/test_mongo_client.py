@@ -4,8 +4,8 @@ import pytest
 
 from domain.User import User
 from persistence.mongo_client import (
-    create_user, read_user, update_user, delete_user,
-    add_alias, remove_alias, add_game, update_yo_count, find_user_by_alias
+    create_user, update_user, delete_user,
+    add_aliases, remove_alias, add_game, update_yo_count, find_user_by_alias, read_user
 )
 
 
@@ -38,8 +38,7 @@ def test_create_user(mock_db):
 def test_update_user(mock_db):
     user = User(id="123", aliases=["alias1"], games={"game1": 100})
     create_user(user)
-    update_user("123", {"new_prop": 123})
-    updated_user = read_user("123")
+    updated_user = update_user("123", {"new_prop": 123})
     assert updated_user['new_prop'] == 123
 
 
@@ -54,9 +53,9 @@ def test_delete_user(mock_db):
 def test_add_alias(mock_db):
     user = User(id="123", aliases=["alias1"], games={"game1": 100})
     create_user(user)
-    add_alias("123", "alias2")
-    updated_user = read_user("123")
-    assert "alias2" in updated_user['aliases']
+    result = add_aliases("123", "alias2", "alias3")
+    assert "alias2" in result['aliases']
+    assert "alias3" in result['aliases']
 
 def test_find_user_by_alias(mock_db):
     user = User(id="123", aliases=["alias1", "alias2"], games={"game1": 100})
@@ -69,16 +68,14 @@ def test_find_user_by_alias(mock_db):
 def test_remove_alias(mock_db):
     user = User(id="123", aliases=["alias1", "alias2"], games={"game1": 100})
     create_user(user)
-    remove_alias("123", "alias2")
-    updated_user = read_user("123")
+    updated_user = remove_alias("123", "alias2")
     assert "alias2" not in updated_user['aliases']
 
 
 def test_add_game(mock_db):
     user = User(id="123", aliases=["alias1"], games={"game1": 100})
     create_user(user)
-    add_game("123", "game2", 200)
-    updated_user = read_user("123")
+    updated_user = add_game("123", "game2", 200)
     assert updated_user['games']["game2"] == 200
 
 
