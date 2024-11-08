@@ -40,15 +40,10 @@ def init_google():
         logger.error(f"HttpError occured: {err}")
 
 
-def fetch_google_sheet_data(sheet_id, data_range) -> Dict[str, List[Tuple[str, int]]]:
+def fetch_google_sheet_data(sheet_id, data_range) -> List[List[str]]:
     try:
         result = sheets.values().get(spreadsheetId=sheet_id, range=data_range).execute()
-        values = result.get("values", [])
-        score_map = map_to_scores(values, END_ROW_TITLE)
-        for user, scores in score_map.items():
-            logger.info(f"User: {user}, Scores: {scores}")
-
-        return score_map
+        return result.get("values", [])
     except HttpError as err:
         logger.error(f"HttpError occurred: {err}")
         raise
