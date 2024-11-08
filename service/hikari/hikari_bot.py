@@ -3,8 +3,11 @@ import os
 from datetime import datetime
 
 import hikari
+import lightbulb
 
 from persistence.mongo_client import update_yo_count
+from service.google import init_google
+from service.hikari import commands
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,23 @@ if BOT_TOKEN is None:
     raise ValueError("BOT_TOKEN environment variable not set")
 
 bot = hikari.GatewayBot(BOT_TOKEN, intents=hikari.Intents.ALL)
+client = lightbulb.client_from_app(bot)
+loader = lightbulb.Loader()
+
+
+async def start_bot():
+    init_google()
+    await bot.start()
+
+
+@bot.listen(hikari.StartingEvent)
+async def on_starting(_: hikari.StartingEvent) -> None:
+    logger.info("Loading extensions")
+    # Load the commands
+    await client.load_extensions_from_package(commands)
+    # Start the client - causing the commands to be synced with discord
+    logger.info("Starting lightbulb client")
+    await client.start()
 
 
 @bot.listen()
