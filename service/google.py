@@ -17,6 +17,8 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets",
 SERVICE_KEY_PATH = os.path.join(
     os.path.dirname(__file__), "../service-key.json")
 
+ENV = os.getenv("ENV")
+
 SHEET_ID = config["google"]["sheets"]["sheet_id"]
 DATA_RANGE = config["google"]["sheets"]["data_range"]
 USER_RANGE = config["google"]["sheets"]["user_range"]
@@ -50,8 +52,18 @@ def init_google():
         SECRETS_CLIENT = secretmanager.SecretManagerServiceClient(
             credentials=creds)
 
-        BOT_TOKEN = get_secrets(BOT_TOKEN_KEY)
+        if ENV == "local":
+            logger.info("Using local bot token")
+            BOT_TOKEN = os.getenv("LOCAL_BOT_TOKEN")
+        else:
+            BOT_TOKEN = get_secrets(BOT_TOKEN_KEY)
+
         MONGO_TOKEN = get_secrets(MONGO_TOKEN_KEY)
+
+        if not BOT_TOKEN:
+            raise ValueError("Missing bot token")
+        if not MONGO_TOKEN:
+            raise ValueError("Missing mongo token")
     except HttpError as err:
         logger.error(f"HttpError occured: {err}")
 
@@ -66,6 +78,7 @@ def get_secrets(secret_id, version_id="latest"):
 
 def fetch_google_sheet_data(sheet_id, data_range) -> List[List[str]]:
     try:
+        logger.debug(f"Fetching data from {sheet_id} in range {data_range}")
         result = SHEETS.values().get(spreadsheetId=sheet_id, range=data_range).execute()
         return result.get("values", [])
     except HttpError as err:

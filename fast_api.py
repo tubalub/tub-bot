@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 async def start_api():
-    config = uvicorn.Config(api, loop="asyncio")
+    config = uvicorn.Config(api, port=8080, loop="asyncio")
     server = uvicorn.Server(config)
     await server.serve()
 

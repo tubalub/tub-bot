@@ -7,15 +7,13 @@ import hikari
 import lightbulb
 
 from persistence.mongo_client import update_yo_count
-from service.google import init_google
+from service.google import init_google, BOT_TOKEN
 from service.hikari import commands
 
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
 if BOT_TOKEN is None:
-    raise ValueError("BOT_TOKEN environment variable not set")
+    init_google()
 
 bot = hikari.GatewayBot(BOT_TOKEN, intents=hikari.Intents.ALL)
 client = lightbulb.client_from_app(bot)
@@ -23,7 +21,6 @@ loader = lightbulb.Loader()
 
 
 async def start_bot():
-    init_google()
     asyncio.create_task(bot.start())
 
 
