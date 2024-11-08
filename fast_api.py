@@ -10,7 +10,6 @@ from service.google import fetch_google_sheet_data, SHEET_ID, DATA_RANGE, USER_R
 from service.hikari.hikari_bot import start_bot, bot
 from service.user_service import update_aliases
 
-api = FastAPI()
 logger = logging.getLogger(__name__)
 
 
@@ -29,6 +28,11 @@ async def lifespan(app: FastAPI):
     await bot.close()
 
 api = FastAPI(lifespan=lifespan)
+
+
+@api.get("/")
+async def hello():
+    return "App is running"
 
 
 @api.post("/sheet/update")
