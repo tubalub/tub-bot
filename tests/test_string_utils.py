@@ -3,6 +3,7 @@ from utils.string_utils import format_name, get_recommendation_string, get_displ
 from domain.GameScore import GameScore
 from domain.User import User
 
+
 class TestStringUtils(unittest.TestCase):
 
     def test_format_name(self):
@@ -39,6 +40,7 @@ class TestStringUtils(unittest.TestCase):
             ["1".rjust(4), "game1", "15".center(5), "User1, User2", "User3".ljust(8)]
         ]
         self.assertEqual(expected_output, get_display_table(games))
+
 
 if __name__ == '__main__':
     unittest.main()

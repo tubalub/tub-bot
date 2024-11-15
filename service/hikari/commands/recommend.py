@@ -8,6 +8,7 @@ from hikari.api import CacheView
 
 from domain.User import User
 from persistence import mongo_client
+from persistence.EntityNotFoundError import EntityNotFoundError
 from persistence.mongo_client import to_user
 from service import game_service
 from service.hikari.hikari_bot import bot
@@ -16,6 +17,16 @@ from utils.string_utils import format_name, get_recommendation_string
 loader = lightbulb.Loader()
 
 logger = logging.getLogger(__name__)
+
+
+async def _find_and_map_error(user_id: str, username: str):
+    try:
+        return to_user(mongo_client.get_user(user_id))
+    except mongo_client.EntityNotFoundError:
+        logger.info(
+            f"User with id {user_id} and username {username} not found in database")
+        # map to username for display purposes
+        raise EntityNotFoundError(username)
 
 
 @loader.command
@@ -38,7 +49,7 @@ class Recommend(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         users = await self._get_users(ctx)
-        if not users and not self.users:
+        if not users:
             await ctx.respond("You must be in a voice channel or provide users to recommend games for", ephemeral=True)
             return
         logger.info(f"Getting recommendations for users: {users}")
@@ -69,7 +80,12 @@ class Recommend(
         voice_users: CacheView[Snowflake, VoiceState] = bot.cache.get_voice_states_view_for_channel(
             ctx.guild_id, actor_channel.id)
 
-        return await self._query_ids(voice_users)
+        ids = []
+
+        for (key, value) in voice_users.items():
+            ids.append((str(key).strip().upper(), value.member.username))
+
+        return await self._query_ids(ids)
 
     async def _query_aliases(
             self,
@@ -97,19 +113,12 @@ class Recommend(
 
     async def _query_ids(
             self,
-            users: CacheView[Snowflake, VoiceState]) -> list[User]:
-        user_ids = [user_id for user_id in users.keys()]
-        # TODO: add username to not found list if query fails
+            ids: list[tuple[str, str]]) -> list[User]:
         tasks = [
             asyncio.to_thread(
-                mongo_client.get_user,
-                str(user_id).strip().upper()) for user_id in user_ids]
+                _find_and_map_error, ids[0], ids[1]) for ids in ids]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        return await self._handle_not_found(results)
 
-    async def _handle_not_found(
-            self,
-            results: list[any]) -> list[User]:
         users: list[User] = []
 
         for result in results:
@@ -117,8 +126,7 @@ class Recommend(
             if isinstance(user, User):
                 users.append(user)
             elif isinstance(result, mongo_client.EntityNotFoundError):
-                formatted_str = format_name(result.query)
-                self.not_found_users.append(formatted_str)
+                self.not_found_users.append(result.query)
             else:
                 logger.error(f"Unhandled error when getting users: {result}")
 
