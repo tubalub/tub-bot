@@ -19,15 +19,6 @@ loader = lightbulb.Loader()
 logger = logging.getLogger(__name__)
 
 
-async def _find_and_map_error(user_id: str, username: str):
-    try:
-        return to_user(mongo_client.get_user(user_id))
-    except mongo_client.EntityNotFoundError:
-        logger.info(
-            f"User with id {user_id} and username {username} not found in database")
-        # map to username for display purposes
-        raise EntityNotFoundError(username)
-
 
 @loader.command
 class Recommend(
@@ -49,7 +40,7 @@ class Recommend(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         users = await self._get_users(ctx)
-        if not users:
+        if not users and not self.not_found_users:
             await ctx.respond("You must be in a voice channel or provide users to recommend games for", ephemeral=True)
             return
         logger.info(f"Getting recommendations for users: {users}")
@@ -59,7 +50,7 @@ class Recommend(
             response += (f"I couldn't find any entries for the following users: "
                          f"{", ".join([alias for alias in self.not_found_users])}. "
                          f"Do they have entries on the google sheet?\n")
-        response += get_recommendation_string(games)
+        response += get_recommendation_string(games) if games else ""
         self.not_found_users = []
         await ctx.respond(response)
 
@@ -83,7 +74,7 @@ class Recommend(
         ids = []
 
         for (key, value) in voice_users.items():
-            ids.append((str(key).strip().upper(), value.member.username))
+            ids.append((str(key).strip().upper(), value.member.display_name))
 
         return await self._query_ids(ids)
 
@@ -114,20 +105,26 @@ class Recommend(
     async def _query_ids(
             self,
             ids: list[tuple[str, str]]) -> list[User]:
-        tasks = [
-            asyncio.to_thread(
-                _find_and_map_error, ids[0], ids[1]) for ids in ids]
+        tasks = [self._find_and_map_error(tuple[0], tuple[1]) for tuple in ids]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         users: list[User] = []
 
         for result in results:
-            user = to_user(result)
-            if isinstance(user, User):
-                users.append(user)
+            if isinstance(result, User):
+                users.append(result)
             elif isinstance(result, mongo_client.EntityNotFoundError):
                 self.not_found_users.append(result.query)
             else:
                 logger.error(f"Unhandled error when getting users: {result}")
 
         return users
+
+    async def _find_and_map_error(self, user_id: str, username: str):
+        try:
+            return to_user(mongo_client.get_user(user_id))
+        except mongo_client.EntityNotFoundError:
+            logger.info(
+                f"User with id {user_id} and username {username} not found in database")
+            # map to username for display purposes
+            raise EntityNotFoundError(username)
