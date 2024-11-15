@@ -30,10 +30,9 @@ def get_recommendation_string(games: list[GameScore]) -> str:
     Returns:
         str: The formatted recommendation string.
     """
-    rows = get_display_table(games)
-    header = ["Rank", "Game", "Score", "Fans", "Excludes"]
-    table = [header] + rows
-    formatted_table = "\n".join([" | ".join(row) for row in table])
+    table = get_display_table(games)
+    formatted_table = "\n".join(
+        [" | ".join(row) if i != 1 else "---".join(row) for i, row in enumerate(table)])
     return f"```\n{formatted_table}\n```"
 
 
@@ -47,15 +46,17 @@ def get_display_table(games: list[GameScore]) -> list[list[str]]:
     Returns:
         list[list[str]]: The display table as a list of lists of strings.
     """
-    rows = []
+    header = ["Rank", "Game", "Score", "Fans", "Excludes"]
+    divider = ["-", "-", "-", "-", "-"]
+    rows = [header] + [divider]
     rank = 1
     for game in games:
         name = game.name
         score = game.score
-        fans = ",".join([format_name(user.aliases[0])
-                        for user in game.favored_users[:3]])
-        excludes = ",".join([format_name(user.aliases[0])
-                            for user in game.excluded_users])
+        fans = ", ".join([format_name(user[1].aliases[0])
+                          for user in game.favored_users[:3]])
+        excludes = ", ".join([format_name(user.aliases[0])
+                              for user in game.excluded_users])
         rows.append([rank, name, score, fans, excludes])
         rank += 1
     format_table_width(rows)
@@ -82,9 +83,22 @@ def format_table_width(rows: list[list[str]]):
         max_fans = max(max_fans, len(row[3]))
         max_excludes = max(max_excludes, len(row[4]))
 
-    for row in rows:
-        row[0] = row[0].rjust(max_rank)
-        row[1] = row[1].ljust(max_name)
-        row[2] = row[2].rjust(max_score)
-        row[3] = row[3].ljust(max_fans)
-        row[4] = row[4].ljust(max_excludes)
+    for i, row in enumerate(rows):
+        if i == 0:
+            row[0] = row[0].center(max_rank)
+            row[1] = row[1].ljust(max_name)
+            row[2] = row[2].center(max_score)
+            row[3] = row[3].ljust(max_fans)
+            row[4] = row[4].ljust(max_excludes)
+        elif i == 1:
+            row[0] = row[0].center(max_rank, "-")
+            row[1] = row[1].center(max_name, "-")
+            row[2] = row[2].center(max_score, "-")
+            row[3] = row[3].center(max_fans, "-")
+            row[4] = row[4].center(max_excludes, "-")
+        else:
+            row[0] = f"{row[0]}".rjust(max_rank)
+            row[1] = row[1].ljust(max_name)
+            row[2] = f"{row[2]}".center(max_score)
+            row[3] = row[3].ljust(max_fans)
+            row[4] = row[4].ljust(max_excludes)

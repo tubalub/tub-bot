@@ -3,13 +3,15 @@ import logging
 
 import hikari
 import lightbulb
-from hikari import ChannelType
+from hikari import ChannelType, Snowflake, VoiceState
+from hikari.api import CacheView
 
 from domain.User import User
 from persistence import mongo_client
 from persistence.mongo_client import to_user
+from service import game_service
 from service.hikari.hikari_bot import bot
-from utils.string_utils import format_name
+from utils.string_utils import format_name, get_recommendation_string
 
 loader = lightbulb.Loader()
 
@@ -21,24 +23,38 @@ class Recommend(
         lightbulb.SlashCommand,
         name="recommend",
         description="Recommend some games for users"):
+    number: int = lightbulb.integer(
+        "count",
+        "Number of games to recommend. Default is 5.",
+        default=5
+    )
     users: str = lightbulb.string(
         "users",
         "Comma-seperated list of users to recommend games for.",
         default=None)
 
+    not_found_users = []
+
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         users = await self._get_users(ctx)
-        logger.info(f"Getting recommendations for users: {users}")
-        users = [str(user.aliases[0]) for user in users]
         if not users and not self.users:
             await ctx.respond("You must be in a voice channel or provide users to recommend games for", ephemeral=True)
-        else:
-            await ctx.respond(f"users: {users}")
+            return
+        logger.info(f"Getting recommendations for users: {users}")
+        games = game_service.get_top_games(users, self.number)
+        response = ""
+        if self.not_found_users:
+            response += (f"I couldn't find any entries for the following users: "
+                         f"{", ".join([alias for alias in self.not_found_users])}. "
+                         f"Do they have entries on the google sheet?\n")
+        response += get_recommendation_string(games)
+        self.not_found_users = []
+        await ctx.respond(response)
 
     async def _get_users(self, ctx: lightbulb.Context) -> list[User]:
         if self.users is not None:
-            return await self._query_aliases(self.users.split(","), ctx)
+            return await self._query_aliases(self.users.split(","))
 
         try:
             actor_voice_state = bot.cache.get_voice_state(
@@ -50,15 +66,14 @@ class Recommend(
             return []
 
         # Fetch all voice states in the guild
-        snowflakes = bot.cache.get_voice_states_view_for_channel(
-            ctx.guild_id, actor_channel.id).keys()
+        voice_users: CacheView[Snowflake, VoiceState] = bot.cache.get_voice_states_view_for_channel(
+            ctx.guild_id, actor_channel.id)
 
-        return await self._query_ids([str(snowflake) for snowflake in snowflakes], ctx)
+        return await self._query_ids(voice_users)
 
     async def _query_aliases(
             self,
-            user_aliases: list[str],
-            ctx: lightbulb.Context) -> list[User]:
+            user_aliases: list[str]) -> list[User]:
         aliases = [user.strip().upper() for user in user_aliases]
         tasks = [
             asyncio.to_thread(
@@ -67,7 +82,6 @@ class Recommend(
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         users: list[User] = []
-        not_found: list[str] = []
 
         for result in results:
             try:
@@ -75,33 +89,28 @@ class Recommend(
             except (TypeError, ValueError, mongo_client.EntityNotFoundError) as e:
                 if isinstance(result, mongo_client.EntityNotFoundError):
                     formatted_str = format_name(result.query)
-                    not_found.append(formatted_str)
+                    self.not_found_users.append(formatted_str)
                 else:
                     logger.error(
                         f"Unhandled error when getting aliases: {e}, result: {result}")
-
-        if not_found:
-            await ctx.respond(f"Could not find entries for users {not_found}")
         return users
 
     async def _query_ids(
             self,
-            user_ids: list[str],
-            ctx: lightbulb.Context) -> list[User]:
-        user_id = [user_id.strip().upper() for user_id in user_ids]
+            users: CacheView[Snowflake, VoiceState]) -> list[User]:
+        user_ids = [user_id for user_id in users.keys()]
+        # TODO: add username to not found list if query fails
         tasks = [
             asyncio.to_thread(
                 mongo_client.get_user,
-                alias) for alias in user_id]
+                str(user_id).strip().upper()) for user_id in user_ids]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        return await self._handle_not_found(ctx, results)
+        return await self._handle_not_found(results)
 
     async def _handle_not_found(
             self,
-            ctx: lightbulb.Context,
             results: list[any]) -> list[User]:
         users: list[User] = []
-        not_found: list[str] = []
 
         for result in results:
             user = to_user(result)
@@ -109,9 +118,8 @@ class Recommend(
                 users.append(user)
             elif isinstance(result, mongo_client.EntityNotFoundError):
                 formatted_str = format_name(result.query)
-                not_found.append(formatted_str)
+                self.not_found_users.append(formatted_str)
             else:
                 logger.error(f"Unhandled error when getting users: {result}")
 
-        await ctx.respond(f"Could not find entries for users {[format_name(name) for name in not_found]}")
         return users
