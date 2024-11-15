@@ -19,11 +19,10 @@ def update_scores(user_scores: Dict[str, Dict[str, int]]) -> int:
     return counter
 
 
-def get_top_games(users: list[User], n: int = 5):
+def get_top_games(users: list[User], n: int = 5) -> list[GameScore]:
     scores = []
-
     for game in users[0].games:
         game_score = GameScore(game, users)
         heapq.heappush(scores, (-game_score.score, game_score))
 
-    return [game_score.name for _, game_score in heapq.nlargest(n, scores)]
+    return [game_score for _, game_score in heapq.nlargest(n, scores)]

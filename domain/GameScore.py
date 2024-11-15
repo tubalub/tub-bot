@@ -12,10 +12,14 @@ class GameScore:
 
         for user in users:
             user_score = user.games[name]
-            heapq.heappush(self.favored_users, (user_score, user))
-            if user_score < 1:
+            if user_score > 0:
+                heapq.heappush(self.favored_users, (user_score, user))
+            else:
                 self.excluded_users.append(user)
             self.score += user_score
 
     def get_top_users(self, n: int) -> list[User]:
         return [user for _, user in heapq.nlargest(n, self.favored_users)]
+
+    def __lt__(self, other):
+        return self.score < other.score

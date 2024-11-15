@@ -18,7 +18,7 @@ def users():
 def test_game_score_initialization(users):
     game_score = GameScore(name="game1", users=users)
     assert game_score.name == "game1"
-    assert len(game_score.favored_users) == 4
+    assert len(game_score.favored_users) == 3
     assert len(game_score.excluded_users) == 1
 
 
