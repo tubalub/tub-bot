@@ -13,7 +13,7 @@ class GameScore:
         for user in users:
             user_score = user.games[name]
             if user_score > 0:
-                heapq.heappush(self.favored_users, (user_score, user))
+                heapq.heappush(self.favored_users, (-user_score, user))
             else:
                 self.excluded_users.append(user)
             self.score += user_score
