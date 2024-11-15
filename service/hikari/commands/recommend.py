@@ -77,7 +77,8 @@ class Recommend(
                     formatted_str = format_name(result.query)
                     not_found.append(formatted_str)
                 else:
-                    logger.error(f"Unhandled error when getting aliases: {result}")
+                    logger.error(
+                        f"Unhandled error when getting aliases: {e}, result: {result}")
 
         if not_found:
             await ctx.respond(f"Could not find entries for users {not_found}")
