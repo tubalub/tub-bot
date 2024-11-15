@@ -4,6 +4,7 @@ import hikari.users
 from pymongo import MongoClient, ReturnDocument
 
 from domain.User import User
+from persistence.EntityNotFoundError import EntityNotFoundError
 from service.google import MONGO_TOKEN, init_google, get_secrets, MONGO_TOKEN_KEY
 
 token = MONGO_TOKEN
@@ -38,7 +39,7 @@ def create_user(user) -> str:
     return users_collection.insert_one(user_dict).inserted_id
 
 
-def read_user(user_id) -> User:
+def get_user(user_id):
     """
     Read a user from the database by ID.
 
@@ -48,7 +49,10 @@ def read_user(user_id) -> User:
     Returns:
         User: The user object retrieved from the database.
     """
-    return users_collection.find_one({"_id": user_id})
+    result = users_collection.find_one({"_id": user_id})
+    if not result:
+        raise EntityNotFoundError(f"No user found for id {user_id}")
+    return result
 
 
 def update_user(user_id, update_data):
@@ -100,7 +104,10 @@ def find_user_by_alias(alias: str):
     Returns:
         User: The user object retrieved from the database.
     """
-    return users_collection.find_one({"aliases": {"$in": [alias]}})
+    result = users_collection.find_one({"aliases": {"$in": [alias]}})
+    if not result:
+        raise EntityNotFoundError(alias, f"No user found with alias {alias}")
+    return result
 
 
 def remove_alias(user_id, alias):
@@ -198,3 +205,7 @@ def update_yo_count(author: hikari.users.User):
         return_document=ReturnDocument.AFTER
     )
     return user["yo_count"], counter
+
+
+def to_user(result) -> User:
+    return User(result["_id"], result["aliases"], result["games"])
