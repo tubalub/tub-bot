@@ -13,7 +13,7 @@ from persistence.mongo_client import (
     add_game,
     update_yo_count,
     find_user_by_alias,
-    get_user)
+    get_user, find_users_by_yo_count)
 
 
 @pytest.fixture
@@ -109,3 +109,11 @@ def test_update_yo_count(mock_db):
     user_count, counter = update_yo_count(author)
     assert user_count == 2
     assert counter['count'] == 2
+
+def test_get_by_yo_count(mock_db):
+    mock_db['users'].insert_many(
+        [{"_id": "1", "display_name": "User1", "yo_count": 1}, {"_id": "2", "display_name": "User2", "yo_count": 2}])
+    result = find_users_by_yo_count(2)
+    assert len(result) == 2
+    assert result[0]['display_name'] == "User2"
+    assert result[1]['display_name'] == "User1"

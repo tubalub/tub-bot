@@ -19,7 +19,7 @@ class GameScore:
             self.score += user_score
 
     def get_top_users(self, n: int) -> list[User]:
-        return [user for _, user in heapq.nlargest(n, self.favored_users)]
+        return [user for _, user in heapq.nsmallest(n, self.favored_users)]
 
     def __lt__(self, other):
         return self.score < other.score
