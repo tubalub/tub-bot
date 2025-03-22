@@ -112,7 +112,7 @@ def find_user_by_alias(alias: str):
 
 def find_users_by_yo_count(limit: int = 5):
     cursor = (users_collection.find({}, {"_id": -1, "display_name": 1, "yo_count": 1})
-              .sort({"yo_count": -1})
+              .sort([("yo_count", -1)])
               .limit(limit))
     return list(cursor)
 
