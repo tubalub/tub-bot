@@ -2,6 +2,7 @@
 import unittest
 from service.ascii_chart_service import format_table, adjust_spacing
 
+
 class TestAsciiChartService(unittest.TestCase):
 
     def test_format_table_with_valid_data(self):
@@ -25,7 +26,8 @@ class TestAsciiChartService(unittest.TestCase):
     def test_format_table_with_exception(self):
         data = [
             {'display_name': 'user1', 'yo_count': 200},
-            {'display_name': 'user2', 'yo_count': 'invalid'},  # This will cause an exception
+            # This will cause an exception
+            {'display_name': 'user2', 'yo_count': 'invalid'},
         ]
         result = format_table(data)
         self.assertIn('user1', result)
@@ -42,6 +44,7 @@ class TestAsciiChartService(unittest.TestCase):
         expected_output = [('u1   ', 200), ('user2', 100), ('u3   ', 50)]
         result = adjust_spacing(input_data)
         self.assertEqual(result, expected_output)
+
 
 if __name__ == '__main__':
     unittest.main()
