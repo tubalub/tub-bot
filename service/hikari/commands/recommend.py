@@ -19,7 +19,6 @@ loader = lightbulb.Loader()
 logger = logging.getLogger(__name__)
 
 
-
 @loader.command
 class Recommend(
         lightbulb.SlashCommand,

@@ -4,12 +4,15 @@ from io import StringIO
 
 import asciibars
 
+
 def format_table(data: list[dict[str, int]]) -> str:
-    formatted_table = "\n".join([f"{user['display_name']}: {user['yo_count']}" for user in data])
+    formatted_table = "\n".join(
+        [f"{user['display_name']}: {user['yo_count']}" for user in data])
     old_stdout = sys.stdout
 
     try:
-        tuples = [(str(item['display_name']), int(item['yo_count'])) for item in data]
+        tuples = [(str(item['display_name']), int(item['yo_count']))
+                  for item in data]
         sys.stdout = StringIO()
         spaced_tuples = adjust_spacing(tuples)
         asciibars.plot(spaced_tuples, sep_lc='|', unit='▓', max_length=40)

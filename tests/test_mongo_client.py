@@ -110,6 +110,7 @@ def test_update_yo_count(mock_db):
     assert user_count == 2
     assert counter['count'] == 2
 
+
 def test_get_by_yo_count(mock_db):
     mock_db['users'].insert_many(
         [{"_id": "1", "display_name": "User1", "yo_count": 1}, {"_id": "2", "display_name": "User2", "yo_count": 2}])

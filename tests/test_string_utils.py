@@ -37,7 +37,8 @@ class TestStringUtils(unittest.TestCase):
         expected_output = [
             ["Rank", "Game ", "Score", "Fans".ljust(12), "Excludes"],
             ["-" * 4, "-" * 5, "-" * 5, "-" * 12, "-" * 8],
-            ["1".rjust(4), "game1", "15".center(5), "User1, User2", "User3".ljust(8)]
+            ["1".rjust(4), "game1", "15".center(
+                5), "User1, User2", "User3".ljust(8)]
         ]
         self.assertEqual(expected_output, get_display_table(games))
 
