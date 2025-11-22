@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 GOOGLE = None
 SHEETS = None
 SECRETS_CLIENT: SecretManagerServiceClient | None = None
-BOT_TOKEN = None
+BOT_TOKEN: str | None = None
 MONGO_TOKEN = None
 
 
