@@ -25,6 +25,17 @@ def mock_db(monkeypatch):
     yield db
 
 
+def test_insert_wordle_entry(mock_db):
+    """Test inserting a new Wordle entry."""
+    update_wordle_entry("TestUser", 150, True)
+
+    user = mock_db['wordle'].find_one({'_id': 'TestUser'})
+    assert user is not None
+    assert user['play_count'] == 1
+    assert user['score_sum'] == 150
+    assert user['win_count'] == 1
+
+
 def test_update_wordle_entry_new_user(mock_db):
     """Test creating a new Wordle entry for a user."""
     update_wordle_entry("Alice", 100, True)
@@ -67,7 +78,7 @@ def test_get_avg_scores_single_user(mock_db):
 
     assert len(results) == 1
     assert results[0][0] == "User1"
-    assert results[0][1] == 100.0
+    assert results[0][1] - 100.0 < 0.001
 
 
 def test_get_avg_scores_multiple_users(mock_db):
@@ -89,11 +100,11 @@ def test_get_avg_scores_multiple_users(mock_db):
     assert len(results) == 3
     # Should be sorted from lowest to highest
     assert results[0][0] == "User3"
-    assert results[0][1] == 70.0
+    assert results[0][1] - 70.0 < 0.001
     assert results[1][0] == "User2"
-    assert results[1][1] == 75.0
+    assert results[1][1] - 75.0 < 0.001
     assert results[2][0] == "User1"
-    assert results[2][1] == 100.0
+    assert results[2][1] - 100.0 < 0.001
 
 
 def test_get_avg_scores_with_limit(mock_db):

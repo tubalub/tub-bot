@@ -1,6 +1,22 @@
+from domain.Wordle import WordleUser
 from persistence.mongo.mongo_client import get_collection
 
 wordle_collection = get_collection('wordle')
+
+
+def insert(document: WordleUser):
+    """
+    Insert a new WordleUser document into the database.
+
+    Args:
+        document: The WordleUser document to insert
+    """
+    wordle_collection.update_one({
+        '_id': document.name,
+        'win_count': document.win_count,
+        'play_count': document.play_count,
+        'score_sum': document.score_sum
+    }, upsert=True)
 
 
 def update_wordle_entry(name: str, score: int, win: bool):
