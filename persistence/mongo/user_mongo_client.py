@@ -1,24 +1,13 @@
 from typing import Dict
 
-import hikari.users
-from pymongo import MongoClient, ReturnDocument
+import hikari
+from pymongo import ReturnDocument
 
 from domain.User import User
 from persistence.EntityNotFoundError import EntityNotFoundError
-from service.google import MONGO_TOKEN, init_google, get_secrets, MONGO_TOKEN_KEY
+from persistence.mongo.mongo_client import get_collection
 
-token = MONGO_TOKEN
-
-if not token:
-    init_google()
-    token = get_secrets(MONGO_TOKEN_KEY)
-
-# MongoDB connection setup
-SERVICE_USER = "arbitragexiv-service-user"
-CONNECTION_STRING = f"mongodb+srv://{SERVICE_USER}:{token}@tubalub.i3nux.mongodb.net/"
-client = MongoClient(CONNECTION_STRING)
-db = client['tubalub']
-users_collection = db['users']
+users_collection = get_collection('users')
 
 
 def create_user(user) -> str:
