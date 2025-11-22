@@ -1,11 +1,14 @@
 # Create a predicate to filter messages from the Wordle app user
 import logging
 import os
+import re
 
 import hikari
 from hikari import Message, Snowflake
 
 from config import config
+from domain.Wordle import WordleUser
+from persistence.mongo import wordle_mongo_client
 from service.hikari.search import search_user_messages
 
 logger = logging.getLogger(__name__)
@@ -18,6 +21,14 @@ else:
     discord_config = config.get('discord', {})
     channel_id = discord_config.get('channel_id')
     wordle_user_id = discord_config.get('wordle_app_user_id')
+
+
+# Pattern to detect the start of a score block (e.g., "4/6:", "X/6:", potentially indented)
+# Group 1: (\d+|X) -> The score (e.g., '4', 'X')
+SCORE_START_PATTERN = re.compile(r"^\s*(\d+|X)\/6:\s*", re.MULTILINE)
+
+# Pattern to extract names from any line:
+NAME_PATTERN = re.compile(r"@([\w\s]+)")
 
 
 async def initialize_wordle_messages(bot: hikari.GatewayBot) -> None:
@@ -41,8 +52,14 @@ async def initialize_wordle_messages(bot: hikari.GatewayBot) -> None:
         messages = await search_user_messages(bot, channel_id, is_wordle_message)
         logger.info(f"Cached {len(messages)} Wordle messages")
 
-        # TODO: Process and store messages in MongoDB
-        # TODO: Extract scores and player information from message content
+        user_dict: dict[str, WordleUser] = {}
+
+        for message in messages:
+            parse_wordle_message(user_dict, message)
+
+        for wordle_user in user_dict.values():
+            logger.info(f"Saving user {wordle_user}")
+            wordle_mongo_client.insert(wordle_user)
 
     except Exception as e:
         logger.error(f"Failed to initialize Wordle messages: {e}")
@@ -52,3 +69,42 @@ def is_wordle_message(message: Message) -> bool:
     author_matches = message.author.id == Snowflake(wordle_user_id)
     content_matches = "Here are yesterday's results:" in message.content
     return author_matches and content_matches
+
+
+def parse_wordle_message(user_dict: dict[str, WordleUser], message: Message):
+    # min_attempts needed to figure out winners since we're iterating line by line
+    attempts = 0
+    min_attempts = 7
+
+    for line in message.content.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+
+        if SCORE_START_PATTERN.match(line):
+            # matched score line, e.x. "4/6: @UserA @UserB"
+            parsed_attempt = SCORE_START_PATTERN.search(line).group(1)
+            attempts = int(parsed_attempt) if parsed_attempt.isdigit() else 7
+            min_attempts = min(min_attempts, attempts)
+
+        # Extract individual user names
+        for name_match in NAME_PATTERN.finditer(line):
+            name = name_match.group(1).strip()  # Name without '@'
+
+            # 4. Get or initialize the WordleUser object
+            user = user_dict.get(name)
+            if user is None:
+                user = WordleUser(name=name)
+                user_dict[name] = user
+
+            # 5. Update the user stats
+            user.play_count += 1
+
+            if attempts == min_attempts and attempts <= 6:
+                user.win_count += 1
+
+            # we do a 'reverse' scoring since a floor of 0 points for a failure is easier to reason about when
+            # comparing rolling averages
+            user.score_sum += 0 if attempts > 6 else 7 - attempts
+
+    return user_dict
