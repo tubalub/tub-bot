@@ -2,7 +2,7 @@ import logging
 
 import lightbulb
 
-from persistence import mongo_client
+from persistence.mongo import mongo_client
 from service.ascii_chart_service import format_table
 
 loader = lightbulb.Loader()

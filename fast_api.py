@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 import logging.config
 
 from config import logging_config
-from persistence.mongo_client import find_user_by_alias
+from persistence.mongo.mongo_client import find_user_by_alias
 from persistence.sheet_mapper import map_to_scores
 from service.game_service import update_scores
 from service.google import fetch_google_sheet_data, SHEET_ID, DATA_RANGE, USER_RANGE, END_ROW_TITLE

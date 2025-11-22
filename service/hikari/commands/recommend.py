@@ -7,9 +7,9 @@ from hikari import ChannelType, Snowflake, VoiceState
 from hikari.api import CacheView
 
 from domain.User import User
-from persistence import mongo_client
+from persistence.mongo import mongo_client
 from persistence.EntityNotFoundError import EntityNotFoundError
-from persistence.mongo_client import to_user
+from persistence.mongo.mongo_client import to_user
 from service import game_service
 from service.hikari.hikari_bot import bot
 from utils.string_utils import format_name, get_recommendation_string

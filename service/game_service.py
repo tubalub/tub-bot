@@ -4,7 +4,7 @@ from typing import Dict
 
 from domain.GameScore import GameScore
 from domain.User import User
-from persistence import mongo_client
+from persistence.mongo import mongo_client
 
 logger = logging.getLogger(__name__)
 
