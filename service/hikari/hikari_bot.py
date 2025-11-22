@@ -8,6 +8,7 @@ from hikari import Snowflake
 from service.google import init_google, BOT_TOKEN
 from service.hikari import commands
 from service.hikari.listener_handlers import handle_yo_message, handle_wordle_result
+from service.hikari.startup_hooks import initialize_wordle_messages
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,8 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     logger.info("Loading extensions")
     # Load the commands
     await client.load_extensions_from_package(commands)
+    # Initialize Wordle message cache at startup
+    await initialize_wordle_messages(bot)
     # Start the client - causing the commands to be synced with discord
     logger.info("Starting lightbulb client")
     await client.start()
