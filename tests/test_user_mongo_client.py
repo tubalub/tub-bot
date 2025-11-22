@@ -1,10 +1,10 @@
-# test_mongo_client.py
+# test_user_mongo_client.py
 import mongomock
 import pytest
 
 from domain.User import User
 from persistence.EntityNotFoundError import EntityNotFoundError
-from persistence.mongo.mongo_client import (
+from persistence.mongo.user_mongo_client import (
     create_user,
     update_user,
     delete_user,
@@ -27,7 +27,7 @@ def mock_db(monkeypatch):
     monkeypatch.setattr('persistence.mongo.mongo_client.client', client)
     monkeypatch.setattr('persistence.mongo.mongo_client.db', db)
     monkeypatch.setattr(
-        'persistence.mongo.mongo_client.users_collection', users_collection)
+        'persistence.mongo.user_mongo_client.users_collection', users_collection)
 
     yield db
 
