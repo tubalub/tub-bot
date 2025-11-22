@@ -3,7 +3,7 @@ from datetime import datetime
 
 from hikari import GuildMessageCreateEvent
 
-from persistence.mongo.mongo_client import update_yo_count
+from persistence.mongo.user_mongo_client import update_yo_count
 
 logger = logging.getLogger(__name__)
 

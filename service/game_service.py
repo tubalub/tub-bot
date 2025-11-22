@@ -4,7 +4,7 @@ from typing import Dict
 
 from domain.GameScore import GameScore
 from domain.User import User
-from persistence.mongo import mongo_client
+from persistence.mongo import user_mongo_client
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 def update_scores(user_scores: Dict[str, Dict[str, int]]) -> int:
     counter = 0
     for alias, scores in user_scores.items():
-        user = mongo_client.find_user_by_alias(alias.upper())
-        mongo_client.add_games(user["_id"], scores)
+        user = user_mongo_client.find_user_by_alias(alias.upper())
+        user_mongo_client.add_games(user["_id"], scores)
         logger.info(f"Updated scores for user {user}")
         counter += 1
     return counter

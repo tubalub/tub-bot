@@ -7,9 +7,9 @@ from hikari import ChannelType, Snowflake, VoiceState
 from hikari.api import CacheView
 
 from domain.User import User
-from persistence.mongo import mongo_client
+from persistence.mongo import mongo_client, user_mongo_client
 from persistence.EntityNotFoundError import EntityNotFoundError
-from persistence.mongo.mongo_client import to_user
+from persistence.mongo.user_mongo_client import to_user
 from service import game_service
 from service.hikari.hikari_bot import bot
 from utils.string_utils import format_name, get_recommendation_string
@@ -83,7 +83,7 @@ class Recommend(
         aliases = [user.strip().upper() for user in user_aliases]
         tasks = [
             asyncio.to_thread(
-                mongo_client.find_user_by_alias,
+                user_mongo_client.find_user_by_alias,
                 alias) for alias in aliases]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -92,8 +92,8 @@ class Recommend(
         for result in results:
             try:
                 users.append(to_user(result))
-            except (TypeError, ValueError, mongo_client.EntityNotFoundError) as e:
-                if isinstance(result, mongo_client.EntityNotFoundError):
+            except (TypeError, ValueError, EntityNotFoundError) as e:
+                if isinstance(result, EntityNotFoundError):
                     formatted_str = format_name(result.query)
                     self.not_found_users.append(formatted_str)
                 else:
@@ -112,7 +112,7 @@ class Recommend(
         for result in results:
             if isinstance(result, User):
                 users.append(result)
-            elif isinstance(result, mongo_client.EntityNotFoundError):
+            elif isinstance(result, EntityNotFoundError):
                 self.not_found_users.append(result.query)
             else:
                 logger.error(f"Unhandled error when getting users: {result}")
@@ -121,8 +121,8 @@ class Recommend(
 
     async def _find_and_map_error(self, user_id: str, username: str):
         try:
-            return to_user(mongo_client.get_user(user_id))
-        except mongo_client.EntityNotFoundError:
+            return to_user(user_mongo_client.get_user(user_id))
+        except EntityNotFoundError:
             logger.info(
                 f"User with id {user_id} and username {username} not found in database")
             # map to username for display purposes

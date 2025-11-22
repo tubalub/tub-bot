@@ -1,6 +1,6 @@
 import logging
 
-from persistence.mongo.mongo_client import add_aliases
+from persistence.mongo.user_mongo_client import add_aliases
 
 logger = logging.Logger(__name__)
 
