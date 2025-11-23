@@ -1,11 +1,12 @@
 import logging
 from datetime import datetime
 
-from hikari import GuildMessageCreateEvent
+from hikari import GuildMessageCreateEvent, Snowflake
 from hikari.api import RESTClient
 
 from persistence.mongo.user_mongo_client import update_yo_count
 from persistence.mongo.wordle_mongo_client import update_wordle_entry
+from service.user_id_cache import username_cache
 from service.wordle_service import parse_wordle_message
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ async def handle_wordle_result(rest: RESTClient, event: GuildMessageCreateEvent)
     logger.info(
         f"Received wordle result from {event.message.author.display_name}")
     result = await parse_wordle_message(rest, {}, event.message)
+    logger.info(f"Parsed Wordle result: {result}")
 
     for user in result.values():
         username = user.name
@@ -40,8 +42,14 @@ async def handle_wordle_result(rest: RESTClient, event: GuildMessageCreateEvent)
             try:
                 logger.info(
                     f"Found snowflake id for user name {username}, looking up user")
-                discord_user = await event.app.rest.fetch_user(int(username))
-                username = discord_user.display_name
+                snowflake = Snowflake(int(username))
+                if snowflake in username_cache:
+                    username = username_cache[snowflake]
+                else:
+                    logger.info(f"Looking up user for id  {username}")
+                    discord_user = await event.app.rest.fetch_user(int(username))
+                    username = discord_user.display_name
+                    username_cache[snowflake] = username
                 logger.info(f"Resolved username: {username}")
             except Exception as e:
                 logger.error(f"Failed to fetch user for id {username}: {e}")

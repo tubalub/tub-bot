@@ -11,6 +11,7 @@ from config import config
 from domain.Wordle import WordleUser
 from persistence.mongo import wordle_mongo_client
 from service.hikari.search import search_user_messages
+from service.user_id_cache import username_cache
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +77,10 @@ async def parse_wordle_message(rest: RESTClient, user_dict: dict[str, WordleUser
     # min_attempts needed to figure out winners since we're iterating line by line
     attempts = 0
     min_attempts = 7
+    logger.info(f"Processing Wordle message: {message.id}: {message.content}")
 
     for line in message.content.splitlines():
+        logger.info(f"Processing line: {line}")
         line = line.strip()
         if not line:
             continue
@@ -87,6 +90,7 @@ async def parse_wordle_message(rest: RESTClient, user_dict: dict[str, WordleUser
             parsed_attempt = SCORE_START_PATTERN.search(line).group(1)
             attempts = int(parsed_attempt) if parsed_attempt.isdigit() else 7
             min_attempts = min(min_attempts, attempts)
+            logger.info(f"Attempts: {attempts}, min_attempts: {min_attempts}")
 
         # Extract individual user names
         for name_match in NAME_PATTERN.finditer(line):
@@ -96,8 +100,14 @@ async def parse_wordle_message(rest: RESTClient, user_dict: dict[str, WordleUser
                 try:
                     logger.info(
                         f"Found snowflake id for user name {name}, looking up user")
-                    discord_user = await rest.fetch_user(int(name))
-                    name = discord_user.display_name
+                    snowflake = Snowflake(int(name))
+                    if snowflake in username_cache:
+                        name = username_cache[snowflake]
+                    else:
+                        logger.info(f"Looking up user for id  {name}")
+                        discord_user = await rest.fetch_user(int(name))
+                        name = discord_user.display_name
+                        username_cache[snowflake] = name
                     logger.info(f"Resolved username: {name}")
                 except Exception as e:
                     logger.error(f"Failed to fetch user for id {name}: {e}")
@@ -109,13 +119,21 @@ async def parse_wordle_message(rest: RESTClient, user_dict: dict[str, WordleUser
                 user = WordleUser(name=name)
                 user_dict[name] = user
 
+            logger.info(
+                f"Updating user {name} with score {attempts} and min_attempts {min_attempts}")
+
             # 5. Update the user stats
+            logger.info(f"Incrementing play_count for user {name}")
             user.play_count += 1
 
             if attempts == min_attempts and attempts <= 6:
+                logger.info(f"Incrementing win_count for user {name}")
                 user.win_count += 1
 
             # TODO: consider score calculation penalty for failures or adjusted for play count
-            user.score_sum += attempts if attempts <= 6 else 7
+            score_increment = attempts if attempts <= 6 else 7
+            logger.info(
+                f"Incrementing score_sum for user {name} by {score_increment}")
+            user.score_sum += score_increment
 
     return user_dict
