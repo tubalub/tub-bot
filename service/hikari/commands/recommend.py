@@ -31,7 +31,7 @@ class Recommend(
     )
     users: str = lightbulb.string(
         "users",
-        "Comma-seperated list of users to recommend games for.",
+        "Comma-separated list of users to recommend games for.",
         default=None)
 
     not_found_users = []

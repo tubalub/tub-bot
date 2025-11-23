@@ -37,6 +37,7 @@ async def on_starting(_: hikari.StartingEvent) -> None:
 @bot.listen(hikari.StartedEvent)
 async def on_started(_: hikari.StartedEvent) -> None:
     # Initialize Wordle message cache at startup
+    logger.info("Lightbulb client started")
     await initialize_wordle_messages(bot)
 
 
