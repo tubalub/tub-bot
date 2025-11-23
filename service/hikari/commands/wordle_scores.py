@@ -1,9 +1,7 @@
-import enum
 import logging
 from typing import Union
 
 import lightbulb
-from scripts.regsetup import description
 
 from persistence.mongo.wordle_mongo_client import get_top_winners, get_top_avg_scores
 

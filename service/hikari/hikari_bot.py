@@ -46,7 +46,7 @@ async def message(event: hikari.GuildMessageCreateEvent):
     if _is_valid_yo_message(event):
         return await handle_yo_message(event)
     elif _is_wordle_result(event):
-        return await handle_wordle_result(event)
+        return handle_wordle_result(event)
     return None
 
 
