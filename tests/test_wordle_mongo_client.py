@@ -4,7 +4,7 @@ import pytest
 
 from persistence.mongo.wordle_mongo_client import (
     update_wordle_entry,
-    get_avg_scores,
+    get_top_avg_scores,
     get_top_winners
 )
 
@@ -74,7 +74,7 @@ def test_get_avg_scores_single_user(mock_db):
     """Test getting average scores with a single user."""
     update_wordle_entry("User1", 100, True)
 
-    results = get_avg_scores(10)
+    results = get_top_avg_scores(10)
 
     assert len(results) == 1
     assert results[0][0] == "User1"
@@ -95,7 +95,7 @@ def test_get_avg_scores_multiple_users(mock_db):
     update_wordle_entry("User3", 70, True)
     update_wordle_entry("User3", 70, False)
 
-    results = get_avg_scores(10)
+    results = get_top_avg_scores(10)
 
     assert len(results) == 3
     # Should be sorted from lowest to highest
@@ -114,7 +114,7 @@ def test_get_avg_scores_with_limit(mock_db):
     update_wordle_entry("User3", 60, True)
     update_wordle_entry("User4", 120, True)
 
-    results = get_avg_scores(2)
+    results = get_top_avg_scores(2)
 
     assert len(results) == 2
     # Should return the 2 users with lowest average scores

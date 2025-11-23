@@ -47,7 +47,7 @@ def update_wordle_entry(name: str, score: int, win: bool):
     }, upsert=True)
 
 
-def get_avg_scores(count: int) -> list[tuple[str, float]]:
+def get_top_avg_scores(count: int) -> list[tuple[str, float]]:
     """
     Get the top users with the lowest average scores.
 
