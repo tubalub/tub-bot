@@ -39,11 +39,11 @@ class WordleScores(
 
         if self.type == WINS:
             logger.info(f"Computing top {self.count} wordle winners")
-            winners = get_top_winners(20)
+            winners = get_top_winners(self.count)
             await context.respond(_format_results("Most wins:", winners))
         else:
             logger.info(f"Computing top {self.count} wordle average scores")
-            best_scorers = get_top_avg_scores(20)
+            best_scorers = get_top_avg_scores(self.count)
             await context.respond(_format_results("Best avg:", best_scorers))
 
         return logger.warning("Not yet implemented")
