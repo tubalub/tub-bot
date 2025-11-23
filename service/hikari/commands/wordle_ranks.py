@@ -15,7 +15,7 @@ AVG = lightbulb.Choice("avg", "avg")
 
 
 @loader.command
-class WordleScores(
+class WordleRanks(
         lightbulb.SlashCommand,
         name="wordle_ranks",
         description="Compute historical list of wordle scores. Not normalized by play count."):
