@@ -2,10 +2,10 @@ import logging
 from datetime import datetime
 
 from hikari import GuildMessageCreateEvent
+from hikari.api import RESTClient
 
 from persistence.mongo.user_mongo_client import update_yo_count
 from persistence.mongo.wordle_mongo_client import update_wordle_entry
-from service.hikari.hikari_bot import bot
 from service.wordle_service import parse_wordle_message
 
 logger = logging.getLogger(__name__)
@@ -28,12 +28,12 @@ async def handle_yo_message(event: GuildMessageCreateEvent):
         await event.message.respond(response)
 
 
-async def handle_wordle_result(event: GuildMessageCreateEvent):
+async def handle_wordle_result(rest: RESTClient, event: GuildMessageCreateEvent):
     logger.info(
         f"Received wordle result from {event.message.author.display_name}")
-    result = await parse_wordle_message(bot.rest, {}, event.message)
+    result = await parse_wordle_message(rest, {}, event.message)
 
-    for user in result:
+    for user in result.values():
         username = user.name
 
         if username.isdigit():

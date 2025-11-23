@@ -1,10 +1,12 @@
 import asyncio
 import logging
+import os
 
 import hikari
 import lightbulb
 from hikari import Snowflake
 
+from config import config
 from service.google import init_google, BOT_TOKEN
 from service.hikari import commands
 from service.hikari.listener_handlers import handle_yo_message, handle_wordle_result
@@ -41,12 +43,12 @@ async def on_started(_: hikari.StartedEvent) -> None:
     await initialize_wordle_messages(bot)
 
 
-@bot.listen()
+@bot.listen(hikari.GuildMessageCreateEvent)
 async def message(event: hikari.GuildMessageCreateEvent):
     if _is_valid_yo_message(event):
         return await handle_yo_message(event)
     elif _is_wordle_result(event):
-        return handle_wordle_result(event)
+        return await handle_wordle_result(bot.rest, event)
     return None
 
 
@@ -55,7 +57,15 @@ def _is_valid_yo_message(event) -> bool:
 
 
 def _is_wordle_result(event: hikari.GuildMessageCreateEvent) -> bool:
-    if event.author.id != Snowflake(1211781489931452447):
+    discord_config = config.get('dev', {}) if os.environ.get(
+        "ENV") == "local" else config.get('discord', {})
+    channel_id = discord_config.get('channel_id')
+    wordle_user_id = discord_config.get('wordle_app_user_id')
+
+    if event.author_id != Snowflake(wordle_user_id):
+        return False
+
+    if event.channel_id != Snowflake(channel_id):
         return False
 
     if "Here are yesterday's results" not in event.message.content:
