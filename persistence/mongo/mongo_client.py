@@ -1,3 +1,5 @@
+import logging
+
 from pymongo import MongoClient
 
 from service.google import MONGO_TOKEN, init_google, get_secrets, MONGO_TOKEN_KEY

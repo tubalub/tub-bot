@@ -15,3 +15,11 @@ loggers:
     handlers: [default]
     level: DEBUG
     propagate: True
+  "pymongo":
+    handlers: [default]
+    level: INFO
+    propagate: True
+  "hikari.ratelimits":
+    handlers: [default]
+    level: INFO
+    propagate: True
