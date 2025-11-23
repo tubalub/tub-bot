@@ -103,8 +103,7 @@ def parse_wordle_message(user_dict: dict[str, WordleUser], message: Message):
             if attempts == min_attempts and attempts <= 6:
                 user.win_count += 1
 
-            # we do a 'reverse' scoring since a floor of 0 points for a failure is easier to reason about when
-            # comparing rolling averages
-            user.score_sum += 0 if attempts > 6 else 7 - attempts
+            # TODO: consider score calculation penalty for failures or adjusted for play count
+            user.score_sum += attempts if attempts <= 6 else 7
 
     return user_dict

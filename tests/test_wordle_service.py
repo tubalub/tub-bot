@@ -94,7 +94,7 @@ def test_parse_single_winner(mock_message):
     alice = result["Alice"]
     assert alice.play_count == 1
     assert alice.win_count == 1  # Lowest score in message (3)
-    assert alice.score_sum == 4  # 7 - 3 = 4 points
+    assert alice.score_sum == 3
 
 
 def test_parse_loss(mock_message):
@@ -110,7 +110,7 @@ def test_parse_loss(mock_message):
     bob = result["Bob"]
     assert bob.play_count == 1
     assert bob.win_count == 0  # Loss is not a win
-    assert bob.score_sum == 0  # 0 points for failure
+    assert bob.score_sum == 7  # 7 points for failure
 
 
 def test_parse_mixed_results(mock_message):
@@ -132,15 +132,15 @@ def test_parse_mixed_results(mock_message):
 
     # Alice
     assert result["Alice"].win_count == 1  # 3 was min_attempts
-    assert result["Alice"].score_sum == 4  # 7 - 3
+    assert result["Alice"].score_sum == 3
 
     # Bob
     assert result["Bob"].win_count == 0  # 5 is not min_attempts (3)
-    assert result["Bob"].score_sum == 2  # 7 - 5
+    assert result["Bob"].score_sum == 5
 
     # Charlie
     assert result["Charlie"].win_count == 0
-    assert result["Charlie"].score_sum == 0
+    assert result["Charlie"].score_sum == 7
 
 
 def test_parse_accumulates_existing_stats(mock_message):
@@ -161,7 +161,7 @@ def test_parse_accumulates_existing_stats(mock_message):
     alice = result["Alice"]
     assert alice.play_count == 6
     assert alice.win_count == 3  # 2/6 is a win
-    assert alice.score_sum == 25  # 20 + (7-2)
+    assert alice.score_sum == 22
 
 
 def test_parse_first_try_guess(mock_message):
@@ -175,7 +175,7 @@ def test_parse_first_try_guess(mock_message):
     parse_wordle_message(user_dict, message)
 
     user = user_dict["LuckyUser"]
-    assert user.score_sum == 6  # 7 - 1 = 6
+    assert user.score_sum == 1
 
 
 def test_parse_multiline_users(mock_message):
@@ -197,23 +197,23 @@ def test_parse_multiline_users(mock_message):
     result = parse_wordle_message(user_dict, message)
 
     # Verify UserA (First line of 1/6)
-    assert result["UserA"].score_sum == 6  # 7 - 1
+    assert result["UserA"].score_sum == 1
     assert result["UserA"].win_count == 1  # 1/6 is min attempts
 
     # Verify UserB (First line of 1/6)
-    assert result["UserB"].score_sum == 6
+    assert result["UserB"].score_sum == 1
     assert result["UserB"].win_count == 1
 
     # Verify UserD (Second line, implies continuation of 1/6)
-    assert result["UserD"].score_sum == 6
+    assert result["UserD"].score_sum == 1
     assert result["UserD"].win_count == 1
 
     # Verify UserE (Second line, implies continuation of 1/6)
-    assert result["UserE"].score_sum == 6
+    assert result["UserE"].score_sum == 1
     assert result["UserE"].win_count == 1
 
     # Verify UserF (New score block 2/6)
-    assert result["UserF"].score_sum == 5  # 7 - 2
+    assert result["UserF"].score_sum == 2
     assert result["UserF"].win_count == 0  # 2 is not min attempts (1)
 
 
@@ -275,9 +275,8 @@ async def test_initialize_wordle_messages(mock_search, mock_message, mock_db):
     # Fetch UserB from DB
     user_b_doc = collection.find_one({"name": "UserB"})
     assert user_b_doc is not None
-    # Game 2: X/6 (Loss, 0 pts)
     assert user_b_doc['play_count'] == 1
-    assert user_b_doc['score_sum'] == 0
+    assert user_b_doc['score_sum'] == 7
 
 
 @pytest.mark.asyncio
