@@ -1,22 +1,58 @@
+import enum
 import logging
+from typing import Union
 
 import lightbulb
+from scripts.regsetup import description
+
+from persistence.mongo.wordle_mongo_client import get_top_winners, get_top_avg_scores
+
+loader = lightbulb.Loader()
 
 logger = logging.getLogger(__name__)
-loader = lightbulb.Loader()
+
+
+WINS = lightbulb.Choice("wins", "wins")
+AVG = lightbulb.Choice("avg", "avg")
 
 
 @loader.command
 class WordleScores(
         lightbulb.SlashCommand,
-        name="search_wordle_scores",
-        description="Compute historical list of wordle scores"):
-
-    wordle_bot_id = 1211781489931452447
+        name="wordle_ranks",
+        description="Compute historical list of wordle scores. Not normalized by play count."):
+    count: int = lightbulb.integer(
+        "count",
+        "Number of top scores to return. Default is 10.",
+        default=10,
+        max_value=20
+    )
+    type: str = lightbulb.string(
+        "type",
+        "Type of score to compute (Wins or Avg). Default is Wins.",
+        choices=[WINS, AVG],
+        default=WINS
+    )
 
     @lightbulb.invoke
     async def invoke(self, context: lightbulb.Context) -> None:
+        logger.info(
+            f"Received command to get wordle scores from {context.user.username} in {context.channel_id}")
+
+        if self.type == WINS:
+            logger.info(f"Computing top {self.count} wordle winners")
+            winners = get_top_winners(20)
+            await context.respond(_format_results("Most wins:", winners))
+        else:
+            logger.info(f"Computing top {self.count} wordle average scores")
+            best_scorers = get_top_avg_scores(20)
+            await context.respond(_format_results("Best avg:", best_scorers))
+
         return logger.warning("Not yet implemented")
 
-    async def _search_wordle_messages(self, context: lightbulb.Context) -> list[str]:
-        return []
+
+def _format_results(header_str: str, results: tuple[str, Union[int, float]]) -> str:
+    if not results:
+        return "No results found."
+    result_str = "\n".join([f"{result[0]}: {result[1]}" for result in results])
+    return f"```{header_str}\n{result_str}```"
