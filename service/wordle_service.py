@@ -5,6 +5,7 @@ import re
 
 import hikari
 from hikari import Message, Snowflake
+from hikari.api import RESTClient
 
 from config import config
 from domain.Wordle import WordleUser
@@ -55,7 +56,7 @@ async def initialize_wordle_messages(bot: hikari.GatewayBot) -> None:
         user_dict: dict[str, WordleUser] = {}
 
         for message in messages:
-            parse_wordle_message(user_dict, message)
+            await parse_wordle_message(bot.rest, user_dict, message)
 
         for wordle_user in user_dict.values():
             logger.info(f"Saving user {wordle_user}")
@@ -71,7 +72,7 @@ def is_wordle_message(message: Message) -> bool:
     return author_matches and content_matches
 
 
-def parse_wordle_message(user_dict: dict[str, WordleUser], message: Message):
+async def parse_wordle_message(rest: RESTClient, user_dict: dict[str, WordleUser], message: Message):
     # min_attempts needed to figure out winners since we're iterating line by line
     attempts = 0
     min_attempts = 7
@@ -90,6 +91,17 @@ def parse_wordle_message(user_dict: dict[str, WordleUser], message: Message):
         # Extract individual user names
         for name_match in NAME_PATTERN.finditer(line):
             name = name_match.group(1).strip()  # Name without '@'
+
+            if name.isdigit():
+                try:
+                    logger.info(
+                        f"Found snowflake id for user name {name}, looking up user")
+                    discord_user = await rest.fetch_user(int(name))
+                    name = discord_user.display_name
+                    logger.info(f"Resolved username: {name}")
+                except Exception as e:
+                    logger.error(f"Failed to fetch user for id {name}: {e}")
+                    continue
 
             # 4. Get or initialize the WordleUser object
             user = user_dict.get(name)

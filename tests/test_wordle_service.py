@@ -19,6 +19,12 @@ from domain.Wordle import WordleUser
 
 
 @pytest.fixture
+def mock_rest():
+    """Mock RESTClient for tests."""
+    return MagicMock()
+
+
+@pytest.fixture
 def mock_message():
     """
     Fixture that returns a factory function to create mock Hikari messages.
@@ -79,7 +85,8 @@ def test_is_wordle_message_wrong_content(mock_message):
 # --- Tests for parse_wordle_message ---
 
 
-def test_parse_single_winner(mock_message):
+@pytest.mark.asyncio
+async def test_parse_single_winner(mock_rest, mock_message):
     """Test parsing a standard message with one winner."""
     content = """Here are yesterday's results:
     3/6: @Alice
@@ -88,7 +95,7 @@ def test_parse_single_winner(mock_message):
     message = mock_message(12345, content)
     user_dict = {}
 
-    result = parse_wordle_message(user_dict, message)
+    result = await parse_wordle_message(mock_rest, user_dict, message)
 
     assert "Alice" in result
     alice = result["Alice"]
@@ -97,7 +104,8 @@ def test_parse_single_winner(mock_message):
     assert alice.score_sum == 3
 
 
-def test_parse_loss(mock_message):
+@pytest.mark.asyncio
+async def test_parse_loss(mock_rest, mock_message):
     """Test parsing a failed game (X/6)."""
     content = """Here are yesterday's results:
     X/6: @Bob
@@ -105,7 +113,7 @@ def test_parse_loss(mock_message):
     message = mock_message(12345, content)
     user_dict = {}
 
-    result = parse_wordle_message(user_dict, message)
+    result = await parse_wordle_message(mock_rest, user_dict, message)
 
     bob = result["Bob"]
     assert bob.play_count == 1
@@ -113,7 +121,8 @@ def test_parse_loss(mock_message):
     assert bob.score_sum == 7  # 7 points for failure
 
 
-def test_parse_mixed_results(mock_message):
+@pytest.mark.asyncio
+async def test_parse_mixed_results(mock_rest, mock_message):
     """
     Test logic where multiple users played.
     Alice got 3/6 (Winner of the day).
@@ -128,7 +137,7 @@ def test_parse_mixed_results(mock_message):
     message = mock_message(12345, content)
     user_dict = {}
 
-    result = parse_wordle_message(user_dict, message)
+    result = await parse_wordle_message(mock_rest, user_dict, message)
 
     # Alice
     assert result["Alice"].win_count == 1  # 3 was min_attempts
@@ -143,7 +152,8 @@ def test_parse_mixed_results(mock_message):
     assert result["Charlie"].score_sum == 7
 
 
-def test_parse_accumulates_existing_stats(mock_message):
+@pytest.mark.asyncio
+async def test_parse_accumulates_existing_stats(mock_rest, mock_message):
     """Test that parsing adds to existing user stats rather than overwriting."""
     user_dict = {"Alice": WordleUser(name="Alice")}
     # Pre-set stats
@@ -156,7 +166,7 @@ def test_parse_accumulates_existing_stats(mock_message):
     """
     message = mock_message(12345, content)
 
-    result = parse_wordle_message(user_dict, message)
+    result = await parse_wordle_message(mock_rest, user_dict, message)
 
     alice = result["Alice"]
     assert alice.play_count == 6
@@ -164,7 +174,8 @@ def test_parse_accumulates_existing_stats(mock_message):
     assert alice.score_sum == 22
 
 
-def test_parse_first_try_guess(mock_message):
+@pytest.mark.asyncio
+async def test_parse_first_try_guess(mock_rest, mock_message):
     """Test the scoring logic for a 1/6 guess (maximum points)."""
     content = """Here are yesterday's results:
     1/6: @LuckyUser
@@ -172,13 +183,14 @@ def test_parse_first_try_guess(mock_message):
     message = mock_message(12345, content)
     user_dict = {}
 
-    parse_wordle_message(user_dict, message)
+    await parse_wordle_message(mock_rest, user_dict, message)
 
     user = user_dict["LuckyUser"]
     assert user.score_sum == 1
 
 
-def test_parse_multiline_users(mock_message):
+@pytest.mark.asyncio
+async def test_parse_multiline_users(mock_rest, mock_message):
     """
     Test parsing when users for a specific score are spread across multiple lines.
     Example:
@@ -194,7 +206,7 @@ def test_parse_multiline_users(mock_message):
     message = mock_message(12345, content)
     user_dict = {}
 
-    result = parse_wordle_message(user_dict, message)
+    result = await parse_wordle_message(mock_rest, user_dict, message)
 
     # Verify UserA (First line of 1/6)
     assert result["UserA"].score_sum == 1
