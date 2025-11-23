@@ -86,7 +86,7 @@ def get_avg_scores(count: int) -> list[tuple[str, float]]:
     return [(doc['_id'], doc['average_score']) for doc in results]
 
 
-def get_winners(count: int) -> list[tuple[str, int]]:
+def get_top_winners(count: int) -> list[tuple[str, int]]:
     """
     Get the top winners by win count.
 

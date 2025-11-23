@@ -5,7 +5,7 @@ import pytest
 from persistence.mongo.wordle_mongo_client import (
     update_wordle_entry,
     get_avg_scores,
-    get_winners
+    get_top_winners
 )
 
 
@@ -126,7 +126,7 @@ def test_get_winners_single_user(mock_db):
     """Test getting winners with a single user."""
     update_wordle_entry("WinnerUser", 100, True)
 
-    results = get_winners(10)
+    results = get_top_winners(10)
 
     assert len(results) == 1
     assert results[0][0] == "WinnerUser"
@@ -144,7 +144,7 @@ def test_get_winners_multiple_users(mock_db):
     update_wordle_entry("Charlie", 100, True)
     update_wordle_entry("Charlie", 100, True)
 
-    results = get_winners(10)
+    results = get_top_winners(10)
 
     assert len(results) == 3
     # Should be sorted from highest to lowest win count
@@ -167,7 +167,7 @@ def test_get_winners_with_limit(mock_db):
     update_wordle_entry("Charlie", 100, True)
     update_wordle_entry("Charlie", 100, True)
 
-    results = get_winners(2)
+    results = get_top_winners(2)
 
     assert len(results) == 2
     # Should return top 2 winners
@@ -184,7 +184,7 @@ def test_get_winners_users_with_no_wins(mock_db):
 
     update_wordle_entry("User2", 100, True)
 
-    results = get_winners(10)
+    results = get_top_winners(10)
 
     assert len(results) == 2
     # User1 has 0 wins, User2 has 1 win
