@@ -36,7 +36,7 @@ async def search_user_messages(
             logger.error(f"Channel {channel_id} is not a text channel")
             return messages
 
-        async for message in channel.fetch_history():
+        async for message in channel.fetch_history().limit(10000):
             if predicate(message):
                 messages.append(message)
     except Exception as e:
