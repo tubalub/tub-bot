@@ -46,7 +46,7 @@ class WordleRanks(
             best_scorers = get_top_avg_scores(self.count)
             await context.respond(_format_results("Best avg:", best_scorers))
 
-        return logger.warning("Not yet implemented")
+        logger.info("Finished fetching wordle ranks")
 
 
 def _format_results(header_str: str, results: tuple[str, Union[int, float]]) -> str:
