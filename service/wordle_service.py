@@ -27,7 +27,7 @@ else:
 
 # Pattern to detect the start of a score block (e.g., "4/6:", "X/6:", potentially indented)
 # Group 1: (\d+|X) -> The score (e.g., '4', 'X')
-SCORE_START_PATTERN = re.compile(r"^\s*(\d+|X)\/6:\s*", re.MULTILINE)
+SCORE_START_PATTERN = re.compile(r"(\d+|X)\/6:", re.MULTILINE)
 
 # Pattern to extract names from any line:
 NAME_PATTERN = re.compile(r"@([\w\s]+)")
@@ -85,12 +85,13 @@ async def parse_wordle_message(rest: RESTClient, user_dict: dict[str, WordleUser
         if not line:
             continue
 
-        if SCORE_START_PATTERN.match(line):
+        if SCORE_START_PATTERN.search(line):
             # matched score line, e.x. "4/6: @UserA @UserB"
             parsed_attempt = SCORE_START_PATTERN.search(line).group(1)
             attempts = int(parsed_attempt) if parsed_attempt.isdigit() else 7
             min_attempts = min(min_attempts, attempts)
-            logger.info(f"Attempts: {attempts}, min_attempts: {min_attempts}")
+            logger.info(
+                f"Matched score line: attempts: {attempts}, min_attempts: {min_attempts}")
 
         # Extract individual user names
         for name_match in NAME_PATTERN.finditer(line):

@@ -3,7 +3,6 @@ import logging
 import lightbulb
 
 from service.hikari.hikari_bot import bot
-from service.hikari.search import search_user_messages
 from service.wordle_service import initialize_wordle_messages
 
 loader = lightbulb.Loader()
