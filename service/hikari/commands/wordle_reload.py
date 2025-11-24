@@ -1,5 +1,6 @@
 import logging
 
+import hikari
 import lightbulb
 
 from service.hikari.hikari_bot import bot
@@ -14,7 +15,8 @@ logger = logging.getLogger(__name__)
 class WordleReload(
         lightbulb.SlashCommand,
         name="wordle_reload",
-        description="Force reload wordle scores."):
+        description="Force reload wordle scores.",
+        default_member_permissions=hikari.Permissions.NONE):
 
     @lightbulb.invoke
     async def invoke(self, context: lightbulb.Context) -> None:
