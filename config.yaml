@@ -9,3 +9,13 @@ google:
   secrets:
     MONGO_TOKEN: ARBITRAGEXIV_MONGO_TOKEN
     BOT_TOKEN: BOT_TOKEN
+
+discord:
+  server_id: 141695517246750720
+  channel_id: 141695517246750720
+  wordle_app_user_id: 1211781489931452447
+
+dev:
+  server_id: 1106152112557146152
+  channel_id: 1442028574084169748
+  wordle_app_user_id: 140155378137694208 # personal user id
