@@ -39,7 +39,7 @@ gunicorn==23.0.0
 h11==0.16.0
 hikari==2.1.0
 hikari-lightbulb==3.0.0a14
-httplib2==0.22.0
+httplib2==0.32.0
 idna==3.10
 iniconfig==2.0.0
 ipython==8.12.3
